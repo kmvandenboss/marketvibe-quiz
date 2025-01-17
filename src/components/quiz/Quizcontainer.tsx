@@ -279,3 +279,5 @@ export function QuizContainer({
     </div>
   );
 }
+
+export default QuizContainer;

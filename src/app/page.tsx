@@ -1,10 +1,15 @@
 // src/app/page.tsx
 'use client';
 
+import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
-import { QuizContainer } from '@/components/quiz/QuizContainer';
 import { Question, QuizResponse } from '@/types/quiz';
 import { LoadingSpinner } from '@/components/quiz/LoadingSpinner';
+
+const QuizContainer = dynamic(() => import('@/components/quiz/QuizContainer'), {
+  loading: () => <LoadingSpinner />,
+  ssr: false
+});
 
 export default function Home() {
   const [questions, setQuestions] = useState<Question[]>([]);
