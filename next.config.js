@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false, // Temporarily disable SWC minification
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
   },
