@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Question, QuizResponse } from '@/types/quiz';
 import { LoadingSpinner } from '@/components/quiz/LoadingSpinner';
 
-const QuizContainer = dynamic(() => import('@/components/quiz/QuizContainer'), {
+const QuizContainer = dynamic(() => import('../../components/quiz/QuizContainer'), {
   loading: () => <LoadingSpinner />,
   ssr: false
 });
