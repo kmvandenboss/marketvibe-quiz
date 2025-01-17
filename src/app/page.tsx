@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { QuizContainer } from '@/components/quiz/QuizContainer';
+import { QuizContainer } from '@/components';
 import { Question, QuizResponse } from '@/types/quiz';
 import { LoadingSpinner } from '@/components/quiz/LoadingSpinner';
 
