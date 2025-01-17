@@ -1,12 +1,31 @@
 // src/components/quiz/QuizContainer.tsx
-import React, { useState } from 'react';
-import { Question, QuizResponse, UserResponse } from '@/types/quiz';
-import { Progress } from '@/components/ui/progress';
+import React, { useState, useEffect } from 'react';
+import { motion, MotionProps, AnimatePresence } from 'framer-motion';
+import { Question, QuizResponse, UserResponse, QuizResults } from '@/types/quiz';
+import { Button } from '@/components/ui/button';
+import { QuestionCard } from '@/components/quiz/QuestionCard';
+import { EmailCapture } from '@/components/quiz/EmailCapture';
+import { ProgressIndicator } from '@/components/quiz/ProgressIndicator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useClickTracking } from '@/hooks/useClickTracking';
+import { LoadingSpinner } from './LoadingSpinner';
+import { feedbackVariants } from '@/components/ui/animations';
 
 interface QuizContainerProps {
   questions: Question[];
   onComplete: (responses: QuizResponse) => Promise<void>;
 }
+
+interface MotionDivProps extends MotionProps {
+  className?: string;
+  children?: React.ReactNode;
+  key?: string;
+  custom?: number;
+  onClick?: (e: React.MouseEvent) => void;
+}
+
+const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 export default function QuizContainer({ 
   questions, 
@@ -18,10 +37,32 @@ export default function QuizContainer({
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quizResults, setQuizResults] = useState<QuizResults | null>(null);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [leadId, setLeadId] = useState<string>('');
+  const [direction, setDirection] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const progress = ((currentStep) / (questions.length + 1)) * 100;
-  const isLastQuestion = currentStep === questions.length - 1;
+  // Debug logging
+  useEffect(() => {
+    console.log('Total questions:', questions.length);
+    console.log('Questions:', questions);
+    console.log('Current step:', currentStep);
+  }, [questions, currentStep]);
+
+  const totalSteps = questions.length + 1; // +1 for email step
+  const isLastQuestion = currentStep === questions.length;
   const isEmailStep = currentStep === questions.length;
+
+  const { trackClick, isTracking } = useClickTracking({
+    leadId,
+    onError: (error) => setError(error),
+  });
+
+  const handleLinkClick = async (link: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    await trackClick(link);
+  };
 
   const handleOptionSelect = (questionId: string, optionIds: string[]) => {
     setResponses(prev => {
@@ -35,21 +76,9 @@ export default function QuizContainer({
     });
   };
 
-  const canProceed = () => {
-    if (isEmailStep) return true;
-    const currentResponse = responses.find(
-      r => r.questionId === questions[currentStep].id
-    );
-    return !!currentResponse && currentResponse.selectedOptionIds.length > 0;
-  };
-
-  const handleNext = () => {
-    if (currentStep < questions.length && !canProceed()) {
-      setError('Please select an option to continue');
-      return;
-    }
-    setError(null);
-    if (currentStep < questions.length + 1) {
+  const handleQuestionTransitionComplete = () => {
+    if (!isEmailStep) {
+      setDirection(1);
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -57,16 +86,33 @@ export default function QuizContainer({
   const handleBack = () => {
     setError(null);
     if (currentStep > 0) {
+      setDirection(-1);
       setCurrentStep(prev => prev - 1);
     }
   };
 
+  const handleStartOver = () => {
+    setCurrentStep(0);
+    setResponses([]);
+    setEmail('');
+    setName('');
+    setError(null);
+    setQuizResults(null);
+    setQuizCompleted(false);
+    setLeadId('');
+    setDirection(1);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
+    setIsLoading(true);
 
     try {
       const quizResponse: QuizResponse = {
@@ -79,115 +125,156 @@ export default function QuizContainer({
         updatedAt: new Date(),
       };
 
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizResponse),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to submit quiz');
+      }
+
+      setQuizResults(data.results);
+      setLeadId(data.leadId);
+      setQuizCompleted(true);
       await onComplete(quizResponse);
     } catch (error) {
       console.error('Error submitting quiz:', error);
       setError('Failed to submit quiz. Please try again.');
     } finally {
       setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const renderEmailStep = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email Address *
-        </label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          placeholder="Enter your email to see results"
-        />
-      </div>
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Name (Optional)
-        </label>
-        <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          placeholder="Your name"
-        />
-      </div>
-      <button
-        type="submit"
-        disabled={isSubmitting || !email}
-        className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-      >
-        {isSubmitting ? 'Submitting...' : 'Get My Results'}
-      </button>
-    </form>
+  const renderResults = () => (
+    <MotionDiv
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Your Recommended Investment Strategies</CardTitle>
+          <CardDescription>
+            Based on your responses, here are your personalized investment recommendations:
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {quizResults?.recommendedInvestments.map((investment, index) => (
+              <MotionDiv
+                key={investment.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="p-4 border rounded-lg hover:border-blue-500 transition-colors"
+              >
+                <h3 className="text-lg font-semibold mb-2">{investment.title}</h3>
+                <p className="text-gray-600 mb-4">{investment.description}</p>
+                <button
+                  onClick={(e) => handleLinkClick(investment.link, e)}
+                  disabled={isTracking}
+                  className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isTracking ? 'Opening...' : 'Learn More →'}
+                </button>
+              </MotionDiv>
+            ))}
+            
+            <MotionDiv 
+              className="mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Button onClick={handleStartOver} variant="outline" className="w-full">
+                Start New Quiz
+              </Button>
+            </MotionDiv>
+          </div>
+        </CardContent>
+      </Card>
+    </MotionDiv>
   );
 
-  const renderQuestion = () => {
-    const question = questions[currentStep];
-    return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">{question.text}</h2>
-        <div className="space-y-2">
-          {question.options.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => handleOptionSelect(question.id, [option.id])}
-              className={`w-full p-4 text-left border rounded-lg transition-colors ${
-                responses.some(r => 
-                  r.questionId === question.id && 
-                  r.selectedOptionIds.includes(option.id)
-                )
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-blue-500'
-              }`}
-            >
-              {option.text}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  if (isLoading) {
+    return <LoadingSpinner variant="skeleton" />;
+  }
+
+  if (quizCompleted && quizResults) {
+    return renderResults();
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="mb-8">
-        <Progress value={progress} className="h-2" />
-        <p className="text-sm text-gray-500 mt-2">
-          Question {currentStep + 1} of {questions.length + 1}
-        </p>
+        <ProgressIndicator 
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+        />
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
-
-      {isEmailStep ? renderEmailStep() : renderQuestion()}
-
-      <div className="mt-8 flex justify-between">
-        <button
-          onClick={handleBack}
-          disabled={currentStep === 0}
-          className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          Back
-        </button>
-        {!isEmailStep && (
-          <button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+      <AnimatePresence initial={false} mode="wait">
+        {error && (
+          <MotionDiv
+            variants={feedbackVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="mb-4"
           >
-            {isLastQuestion ? 'Continue to Results' : 'Next'}
-          </button>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </MotionDiv>
         )}
+      </AnimatePresence>
+
+      <div role="form" aria-label="Investment Quiz">
+        {isEmailStep ? (
+          <EmailCapture
+            email={email}
+            setEmail={setEmail}
+            name={name}
+            setName={setName}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+        ) : (
+          <QuestionCard
+            question={questions[currentStep]}
+            selectedOptionIds={
+              responses.find(r => r.questionId === questions[currentStep].id)
+                ?.selectedOptionIds || []
+            }
+            onOptionSelect={handleOptionSelect}
+            onAnimationComplete={handleQuestionTransitionComplete}
+            direction={direction}
+          />
+        )}
+
+        <MotionDiv 
+          className="mt-8 flex justify-start"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Button
+            onClick={handleBack}
+            disabled={currentStep === 0}
+            variant="secondary"
+            type="button"
+            aria-label="Go back to previous question"
+          >
+            Back
+          </Button>
+        </MotionDiv>
       </div>
     </div>
   );

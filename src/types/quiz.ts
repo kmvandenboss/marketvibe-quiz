@@ -53,4 +53,5 @@ export const QUIZ_CONFIG = {
   minOptionsPerQuestion: 3,
   maxOptionsPerQuestion: 4,
   maxClickTracking: 3,
+  maxRecommendations: 3,
 } as const;
