@@ -15,6 +15,9 @@ export default function Home() {
     const fetchQuestions = async () => {
       try {
         const response = await fetch('/api/questions');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         
         if (!data.success) {
@@ -24,7 +27,7 @@ export default function Home() {
         setQuestions(data.questions);
       } catch (error) {
         console.error('Error fetching questions:', error);
-        setError('Failed to load quiz questions. Please try again.');
+        setError(error instanceof Error ? error.message : 'Failed to load quiz questions');
       } finally {
         setIsLoading(false);
       }
@@ -32,10 +35,6 @@ export default function Home() {
 
     fetchQuestions();
   }, []);
-
-  const handleQuizComplete = async (responses: QuizResponse) => {
-    console.log('Quiz completed:', responses);
-  };
 
   if (isLoading) {
     return (
@@ -69,7 +68,9 @@ export default function Home() {
         </h1>
         <QuizContainer 
           questions={questions} 
-          onComplete={handleQuizComplete} 
+          onComplete={async (responses: QuizResponse) => {
+            console.log('Quiz completed:', responses);
+          }} 
         />
       </div>
     </main>
