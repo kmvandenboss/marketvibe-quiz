@@ -27,7 +27,7 @@ interface MotionDivProps extends MotionProps {
 
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
-export default function QuizContainer({ 
+export function QuizContainer({
   questions, 
   onComplete 
 }: QuizContainerProps) {
