@@ -32,8 +32,7 @@ export async function POST(request: Request) {
     await db
       .update(leads)
       .set({
-        clickedLinks: updatedLinks,
-        updatedAt: new Date(),
+        clickedLinks: updatedLinks
       })
       .where(eq(leads.id, leadId));
 

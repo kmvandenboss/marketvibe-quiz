@@ -1,7 +1,7 @@
 // src/components/quiz/ProgressIndicator.tsx
 import React from 'react';
 import { motion, MotionProps } from 'framer-motion';
-import * as ProgressPrimitive from "@radix-ui/react-progress";
+import { Progress } from '@/components/ui/progress';
 import { progressVariants } from '@/components/ui/animations';
 
 interface ProgressIndicatorProps {
@@ -23,25 +23,7 @@ export function ProgressIndicator({ currentStep, totalSteps }: ProgressIndicator
 
   return (
     <div className="space-y-2">
-      <ProgressPrimitive.Root
-        className="relative h-2 w-full overflow-hidden rounded-full bg-gray-100"
-      >
-        <MotionDiv
-          className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-          initial={{ scaleX: 0 }}
-          animate={{ 
-            scaleX: progress / 100,
-            transition: {
-              type: "spring",
-              stiffness: 260,
-              damping: 20
-            }
-          }}
-          style={{ 
-            transformOrigin: 'left'
-          }}
-        />
-      </ProgressPrimitive.Root>
+      <Progress value={progress} />
       
       <MotionDiv 
         className="flex justify-between items-center"

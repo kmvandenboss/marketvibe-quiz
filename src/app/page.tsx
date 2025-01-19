@@ -44,7 +44,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+      <div className="flex items-center justify-center py-8">
         <LoadingSpinner />
       </div>
     );
@@ -52,7 +52,7 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+      <div className="flex items-center justify-center py-8">
         <div className="text-red-500 text-center">
           <p>{error}</p>
           <button 
@@ -67,8 +67,8 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <main className="py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">
           Find Your High-Yield Investment Path
         </h1>

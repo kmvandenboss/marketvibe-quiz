@@ -1,7 +1,16 @@
 // src/components/quiz/EmailCapture.tsx
 import React from 'react';
+import { motion, MotionProps } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
+import { questionVariants } from '@/components/ui/animations';
+
+interface MotionDivProps extends MotionProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
+const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 interface EmailCaptureProps {
   email: string;
@@ -21,7 +30,14 @@ export function EmailCapture({
   isSubmitting,
 }: EmailCaptureProps) {
   return (
-    <Card>
+    <MotionDiv
+      variants={questionVariants}
+      initial="enter"
+      animate="center"
+      exit="exit"
+      className="w-full max-w-2xl mx-auto"
+    >
+      <Card>
       <CardHeader>
         <CardTitle>Get Your Personalized Results</CardTitle>
         <CardDescription>
@@ -73,6 +89,7 @@ export function EmailCapture({
           </p>
         </form>
       </CardContent>
-    </Card>
+      </Card>
+    </MotionDiv>
   );
 }

@@ -61,7 +61,7 @@ export function QuestionCard({
         animate="center"
         exit="exit"
         onAnimationComplete={() => setIsTransitioning(false)}
-        className="w-full"
+        className="w-full max-w-2xl mx-auto"
       >
         <Card>
           <CardHeader>

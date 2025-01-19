@@ -48,17 +48,21 @@ export async function POST(request: Request) {
       );
     }
 
+    type LeadInsert = typeof leads.$inferInsert;
+    
     // Store lead in database
     console.log('Inserting lead into database with score:', calculatedResults.score);
+    const insertData: LeadInsert = {
+      email,
+      ...(name ? { name } : {}),
+      responses,
+      clickedLinks: [],
+      score: calculatedResults.score,
+    };
+    
     const [lead] = await db
       .insert(leads)
-      .values({
-        email,
-        name,
-        responses,
-        clickedLinks: [],
-        score: calculatedResults.score, // Use the score directly from calculated results
-      })
+      .values(insertData)
       .returning();
     console.log('Lead inserted:', lead);
 
