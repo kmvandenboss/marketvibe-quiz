@@ -140,18 +140,6 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
         </div>
       )}
 
-      {!quizState.isComplete && quizState.currentQuestionIndex > 0 && (
-        <MotionButton
-          variant="back"
-          onClick={handleBack}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mt-4"
-        >
-          Back
-        </MotionButton>
-      )}
-      
       <AnimatePresence mode="wait">
         <MotionDiv
           key={quizState.currentQuestionIndex}
@@ -182,6 +170,18 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
           )}
         </MotionDiv>
       </AnimatePresence>
+
+      {!quizState.isComplete && quizState.currentQuestionIndex > 0 && (
+        <MotionButton
+          variant="back"
+          onClick={handleBack}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-4"
+        >
+          Back
+        </MotionButton>
+      )}
 
       {submissionState.error && !submissionState.isLoading && (
         <MotionDiv
