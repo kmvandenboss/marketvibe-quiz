@@ -13,11 +13,15 @@ const MotionDiv = motion.div as React.FC<MotionDivProps>;
 export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ current, total }) => {
   // Calculate progress with a minimum of 2% to show the starting point
   const progress = Math.max(2, (current / total) * 100);
+  
+  // For display, we want to show current question number (current + 1)
+  // except on the last question where we show the total
+  const displayNumber = current === total ? total : current + 1;
 
   return (
     <div className="w-full">
       <div className="flex justify-between text-sm text-gray-600 mb-2">
-        <span>Question {current} of {total}</span>
+        <span>Question {displayNumber} of {total}</span>
         <span>{Math.round((current / total) * 100)}% Complete</span>
       </div>
       <div 
