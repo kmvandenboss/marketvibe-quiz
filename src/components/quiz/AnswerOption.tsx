@@ -3,12 +3,19 @@ import React from 'react';
 import { motion, MotionProps } from 'framer-motion';
 import { Question } from '@/types/quiz';
 
+// Define proper motion component types
+type MotionButtonProps = MotionProps & React.ComponentProps<'button'>;
+const MotionButton = motion.button as React.FC<MotionButtonProps>;
+
+type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
+const MotionDiv = motion.div as React.FC<MotionDivProps>;
+
 const CheckIcon: React.FC<{ style?: React.CSSProperties }> = ({ style }) => (
   <svg 
     style={{
-      width: '1.5rem',
-      height: '1.5rem',
-      color: '#3B82F6',
+      width: '2.5rem',
+      height: '2.5rem',
+      color: '#228B22',
       ...style
     }}
     fill="none" 
@@ -31,9 +38,6 @@ interface AnswerOptionProps {
   animationDelay: number;
 }
 
-type MotionButtonProps = MotionProps & React.ComponentProps<'button'>;
-const MotionButton = motion.button as React.FC<MotionButtonProps>;
-
 const AnswerOption: React.FC<AnswerOptionProps> = ({ 
   option, 
   isSelected, 
@@ -44,37 +48,39 @@ const AnswerOption: React.FC<AnswerOptionProps> = ({
     <MotionButton
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: animationDelay }}
-      whileHover={{ scale: 1.02 }}
+      transition={{ 
+        delay: animationDelay,
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1]
+      }}
+      whileHover={{ 
+        scale: 1.02,
+        transition: { duration: 0.2 }
+      }}
       whileTap={{ scale: 0.98 }}
       onClick={onSelect}
-      style={{
-        width: '100%',
-        padding: '1rem',
-        borderRadius: '0.5rem',
-        border: '2px solid',
-        borderColor: isSelected ? '#3B82F6' : '#E5E7EB',
-        backgroundColor: isSelected ? '#EFF6FF' : 'transparent',
-        color: isSelected ? '#1D4ED8' : '#374151',
-        transition: 'all 200ms',
-        cursor: 'pointer'
-      }}
+      className={`
+        relative w-full p-4 rounded-xl
+        border-2 transition-all duration-200
+        ${isSelected ? 'shadow-green-selected border-[#228B22] bg-[#F0FFF0]' : 'shadow-green border-transparent bg-white hover:border-[#228B22]/20'}
+        ${isSelected ? 'text-[#228B22]' : 'text-gray-700'}
+        cursor-pointer
+        hover:bg-[#F8FFF8]
+      `}
     >
-      <span style={{ display: 'block', textAlign: 'left' }}>{option.text}</span>
-      {isSelected && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          style={{
-            position: 'absolute',
-            right: '1rem',
-            top: '50%',
-            transform: 'translateY(-50%)'
-          }}
-        >
-          <CheckIcon />
-        </motion.div>
-      )}
+      <div className="flex items-center justify-between">
+        <span className="text-left font-medium">{option.text}</span>
+        {isSelected && (
+          <MotionDiv
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="ml-4 flex-shrink-0"
+          >
+            <CheckIcon />
+          </MotionDiv>
+        )}
+      </div>
     </MotionButton>
   );
 };

@@ -39,15 +39,23 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
   });
 
   const handleAnswer = (questionId: string, optionId: string) => {
-    setQuizState(prev => {
-      const nextIndex = prev.currentQuestionIndex + 1;
-      return {
-        ...prev,
-        answers: { ...prev.answers, [questionId]: optionId },
-        currentQuestionIndex: nextIndex,
-        isComplete: nextIndex >= questions.length
-      };
-    });
+    // First update the answers immediately
+    setQuizState(prev => ({
+      ...prev,
+      answers: { ...prev.answers, [questionId]: optionId }
+    }));
+  
+    // Then update the question index after a delay
+    setTimeout(() => {
+      setQuizState(prev => {
+        const nextIndex = prev.currentQuestionIndex + 1;
+        return {
+          ...prev,
+          currentQuestionIndex: nextIndex,
+          isComplete: nextIndex >= questions.length
+        };
+      });
+    }, 500); // 500ms delay
   };
 
   const handleBack = () => {
