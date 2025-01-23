@@ -189,6 +189,34 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
         </div>
       )}
 
+{quizState.currentQuestionIndex === 0 && (
+        <MotionDiv
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            delay: 0.5,
+            duration: 0.6,
+          }}
+          className="text-center mb-8 bg-green-50 rounded-lg p-4 border border-green-100 shadow-sm"
+        >
+          <MotionDiv
+            animate={{ 
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              repeatType: "reverse",
+              ease: "easeInOut"
+            }}
+            className="font-semibold text-lg text-green-800"
+          >
+            Select an answer below to begin your assessment 👇
+          </MotionDiv>
+        </MotionDiv>
+      )}
+
+
       <AnimatePresence mode="wait">
         <MotionDiv
           key={quizState.currentQuestionIndex}
