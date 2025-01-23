@@ -1,9 +1,10 @@
-//src/components/quiz/EmailCaptureForm.tsx
+// src/components/quiz/EmailCaptureForm.tsx
 import React, { useState } from 'react';
 import { motion, MotionProps } from 'framer-motion';
 
 interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
+  matchedOptionsCount: number;
 }
 
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
@@ -11,7 +12,7 @@ type MotionButtonProps = MotionProps & React.ComponentProps<'button'>;
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 const MotionButton = motion.button as React.FC<MotionButtonProps>;
 
-const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit }) => {
+const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOptionsCount }) => {
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(true);
 
@@ -39,10 +40,14 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit }) => {
       }}
     >
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-        Get Your Personalized Investment Strategy
+        Based on your answers, we have{' '}
+        <span className="text-blue-600 font-bold">
+          {matchedOptionsCount} high-yield investment
+        </span>{' '}
+        {matchedOptionsCount === 1 ? 'idea' : 'ideas'} for you
       </h2>
       <p className="text-gray-600 mb-6">
-        Enter your email below to receive your customized investment recommendations.
+        Enter your email below to see your personalized investment recommendations.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,78 +1,72 @@
 # MarketVibe Quiz App Project Structure
 
-```
-marketvibe-quiz-app/
-├── .env                      # Environment variables configuration
-├── src/                      # Source code directory
-│   ├── app/                  # Next.js app directory
-│   │   ├── api/             # API routes
-│   │   │   ├── questions/   # Questions API endpoint
-│   │   │   │   └── route.ts
-│   │   │   └── submit/      # Submit API endpoint
-│   │   │       └── route.ts
-│   │   ├── quiz/           # Quiz page
-│   │   │   └── page.tsx
-│   │   ├── globals.css     # Global styles
-│   │   └── layout.tsx      # Root layout component
-│   ├── components/         # React components
-│   │   └── quiz/          # Quiz-specific components
-│   │       ├── AnswerOption.tsx
-│   │       ├── EmailCaptureForm.tsx
-│   │       ├── ProgressIndicator.tsx
-│   │       ├── QuestionCard.tsx
-│   │       └── QuizContainer.tsx
-│   ├── db/                # Database related files
-│   │   ├── queries.ts     # Database queries
-│   │   └── schema.ts      # Database schema definitions
-│   └── types/            # TypeScript type definitions
-│       └── quiz.ts       # Quiz-related types
-├── scripts/             # Utility scripts
-│   └── test-db.ts      # Database testing script
-├── drizzle.config.ts   # Drizzle ORM configuration
-├── global.d.ts         # Global TypeScript declarations
-├── next.config.js      # Next.js configuration
-├── package.json        # Project dependencies and scripts
-├── tailwind.config.ts  # Tailwind CSS configuration
-└── tsconfig.json       # TypeScript configuration
-```
+This document provides an overview of the project structure and organization.
 
-## Directory Overview
+## Root Directory
 
-### `/src`
-The main source code directory containing all application code.
+- `.gitignore` - Git ignore configuration
+- `drizzle.config.ts` - Drizzle ORM configuration
+- `eslint.config.mjs` - ESLint configuration
+- `global.d.ts` - Global TypeScript declarations
+- `next.config.js` - Next.js configuration
+- `postcss.config.js/mjs` - PostCSS configuration
+- `tailwind.config.ts` - Tailwind CSS configuration
+- `tsconfig.json` - TypeScript configuration
 
-#### `/src/app`
-Next.js 13+ app directory structure with file-based routing.
-- `/api`: API routes for handling backend functionality
-- `/quiz`: Main quiz page implementation
-- `globals.css`: Global styles
-- `layout.tsx`: Root layout component
+## Source Code (`/src`)
 
-#### `/src/components`
-Reusable React components.
-- `/quiz`: Components specific to the quiz functionality
-  - `AnswerOption.tsx`: Individual answer option component
-  - `EmailCaptureForm.tsx`: Form for collecting user emails
-  - `ProgressIndicator.tsx`: Quiz progress visualization
-  - `QuestionCard.tsx`: Question display component
-  - `QuizContainer.tsx`: Main quiz container component
+### App Directory (`/src/app`)
+Next.js 13+ app directory structure:
+- `layout.tsx` - Root layout component
+- `page.tsx` - Home page component
+- `globals.css` - Global styles
+- `/quiz` - Quiz page route
+  - `page.tsx` - Quiz page component
 
-#### `/src/db`
-Database-related code using Drizzle ORM.
-- `queries.ts`: Database query implementations
-- `schema.ts`: Database schema definitions
+### API Routes (`/src/app/api`)
+- `/investment-options` - Investment options API endpoint
+- `/questions` - Quiz questions API endpoint
+- `/submit` - Quiz submission endpoint
+- `/track-click` - Click tracking endpoint
 
-#### `/src/types`
-TypeScript type definitions.
-- `quiz.ts`: Quiz-related type definitions
+### Components (`/src/components`)
+- `/quiz` - Quiz-specific components
+  - `AnswerOption.tsx` - Individual answer option component
+  - `EmailCaptureForm.tsx` - Email collection form
+  - `LoadingSpinner.tsx` - Loading indicator
+  - `ProgressIndicator.tsx` - Quiz progress bar
+  - `QuestionCard.tsx` - Question display component
+  - `QuizContainer.tsx` - Main quiz container
+  - `ResultsCard.tsx` - Quiz results display
+- `/ui` - Shared UI components
+  - `button.tsx` - Reusable button component
 
-### Configuration Files
-- `.env`: Environment variables
-- `drizzle.config.ts`: Drizzle ORM configuration
-- `global.d.ts`: Global TypeScript declarations
-- `next.config.js`: Next.js configuration
-- `tailwind.config.ts`: Tailwind CSS configuration
-- `tsconfig.json`: TypeScript configuration
+### Database (`/src/db`)
+- `config.ts` - Database configuration
+- `index.ts` - Database connection setup
+- `migrate.ts` - Database migration utility
+- `queries.ts` - Database queries
+- `schema.ts` - Database schema definitions
+- `/migrations` - Database migration files
+  - `0000_noisy_wraith.sql` - Initial migration
+  - `/meta` - Migration metadata
 
-### Scripts
-- `/scripts/test-db.ts`: Database testing utility script
+### Library (`/src/lib`)
+- `db.ts` - Database utility functions
+
+### Types (`/src/types`)
+- `quiz.ts` - Quiz-related TypeScript types
+
+### Utils (`/src/utils`)
+- `quiz-utils.ts` - Quiz helper functions
+
+## Public Assets (`/public`)
+Static files served directly:
+- `file.svg`
+- `globe.svg`
+- `next.svg`
+- `vercel.svg`
+- `window.svg`
+
+## Scripts (`/scripts`)
+Custom scripts and utilities for project maintenance.

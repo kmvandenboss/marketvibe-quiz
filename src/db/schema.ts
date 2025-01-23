@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, json, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, json, jsonb, boolean } from "drizzle-orm/pg-core";
 
 // Questions table - matches existing database structure
 export const questions = pgTable("questions", {
@@ -25,14 +25,15 @@ export const investmentOptions = pgTable("investment_options", {
 
 // Leads table - stores user information and quiz responses
 export const leads = pgTable("leads", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull(),
-  name: text("name"),
-  responses: jsonb("responses").notNull(),
-  score: jsonb("score").notNull(),
-  clickedLinks: jsonb("clicked_links").default('[]').notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull()
+	id: uuid("id").defaultRandom().primaryKey().notNull(),
+	email: text("email").notNull(),
+	name: text("name"),
+	responses: jsonb("responses").notNull(),
+	clickedLinks: jsonb("clicked_links").notNull(),
+	score: jsonb("score").notNull(),
+	isAccredited: boolean("is_accredited").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 });
 
 // Analytics events table - tracks user interactions and quiz flow

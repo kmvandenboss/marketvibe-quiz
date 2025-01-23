@@ -1,5 +1,4 @@
-// /src/db/queries.ts
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { db } from './index';
 import { questions, leads, investmentOptions, analyticsEvents } from './schema';
 
@@ -37,24 +36,29 @@ export async function submitQuizResponse({
   name,
   responses,
   score,
+  isAccredited = false,
 }: {
   email: string;
   name?: string;
   responses: Record<string, string>;
   score: Record<string, number>;
+  isAccredited?: boolean;
 }) {
   try {
     // Insert quiz response
     const leadId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    
     await db.insert(leads).values({
       id: leadId,
       email,
       name,
       responses,
       score,
+      isAccredited,
       clickedLinks: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     });
 
     return leadId;
@@ -107,7 +111,7 @@ export async function trackLinkClick({
     await db.update(leads)
       .set({ 
         clickedLinks: updatedLinks,
-        updatedAt: new Date()
+        updatedAt: new Date().toISOString()
       })
       .where(eq(leads.id, leadId));
 
@@ -121,6 +125,54 @@ export async function trackLinkClick({
         ? `Failed to track link click: ${error.message}`
         : 'Failed to track link click'
     );
+  }
+}
+
+export async function getDashboardMetrics() {
+  try {
+    const leadsList = await db.select().from(leads);
+    
+    // Calculate metrics
+    const totalLeads = leadsList.length;
+    const accreditedLeads = leadsList.filter(lead => lead.isAccredited).length;
+    const conversionRate = totalLeads > 0 ? (accreditedLeads / totalLeads) * 100 : 0;
+    
+    // Get leads with link clicks
+    const leadsWithClicks = leadsList.filter(lead => 
+      Array.isArray(lead.clickedLinks) && lead.clickedLinks.length > 0
+    ).length;
+
+    return {
+      totalLeads,
+      accreditedLeads,
+      conversionRate: Number(conversionRate.toFixed(2)),
+      leadsWithClicks,
+      clickThroughRate: totalLeads > 0 ? (leadsWithClicks / totalLeads) * 100 : 0
+    };
+  } catch (error) {
+    console.error('Error fetching dashboard metrics:', error);
+    throw new Error('Failed to fetch dashboard metrics');
+  }
+}
+
+export async function getLeadsList() {
+  try {
+    const leadsList = await db.select()
+      .from(leads)
+      .orderBy(desc(leads.createdAt));
+
+    return leadsList.map((lead) => ({
+      id: lead.id,
+      email: lead.email,
+      name: lead.name || '',
+      isAccredited: lead.isAccredited || false,
+      score: lead.score as Record<string, number>,
+      clickedLinks: Array.isArray(lead.clickedLinks) ? lead.clickedLinks as string[] : [],
+      createdAt: lead.createdAt
+    }));
+  } catch (error) {
+    console.error('Error fetching leads list:', error);
+    throw new Error('Failed to fetch leads list');
   }
 }
 
@@ -142,9 +194,7 @@ export async function logAnalyticsEvent({
   sessionId?: string;
 }) {
   try {
-    const id = crypto.randomUUID();
     await db.insert(analyticsEvents).values({
-      id,
       eventType,
       leadId,
       questionId,
@@ -152,9 +202,8 @@ export async function logAnalyticsEvent({
       userAgent,
       ipAddress,
       sessionId,
-      timestamp: new Date()
+      timestamp: new Date()  // Changed from toISOString() to just new Date()
     });
-    return id;
   } catch (error) {
     console.error('Error logging analytics event:', error);
     throw new Error('Failed to log analytics event');

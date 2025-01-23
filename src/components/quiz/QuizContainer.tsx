@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+// src/components/quiz/QuizContainer.tsx
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, MotionProps } from 'framer-motion';
-import { Question, QuizState, InvestmentOption } from '@/types/quiz';
+import { Question, InvestmentOption } from '@/types/quiz';  // Remove QuizState from import
 import QuestionCard from './QuestionCard';
 import { ProgressIndicator } from './ProgressIndicator';
 import EmailCaptureForm from './EmailCaptureForm';
@@ -14,21 +15,30 @@ interface QuizContainerProps {
   onComplete?: (answers: Record<string, string>, email: string) => Promise<void>;
 }
 
+interface QuizContainerState {  // Renamed from QuizState
+  currentQuestionIndex: number;
+  answers: Record<string, string>;
+  isComplete: boolean;
+  isLastQuestionAnswered: boolean;
+}
+
 interface SubmissionState {
   isLoading: boolean;
   error: string | null;
   leadId: string | null;
   investmentOptions: InvestmentOption[];
+  matchedOptionsCount: number;
 }
 
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onComplete }) => {
-  const [quizState, setQuizState] = useState<QuizState>({
+  const [quizState, setQuizState] = useState<QuizContainerState>({  // Updated type
     currentQuestionIndex: 0,
     answers: {},
     isComplete: false,
+    isLastQuestionAnswered: false
   });
 
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
@@ -36,27 +46,73 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
     error: null,
     leadId: null,
     investmentOptions: [],
+    matchedOptionsCount: 0
   });
 
-  const handleAnswer = (questionId: string, optionId: string) => {
-    // First update the answers immediately
+  const handleAnswer = async (questionId: string, optionId: string) => {
+    const isLastQuestion = quizState.currentQuestionIndex === questions.length - 1;
+    
+    // Update answers first
     setQuizState(prev => ({
       ...prev,
-      answers: { ...prev.answers, [questionId]: optionId }
+      answers: { ...prev.answers, [questionId]: optionId },
+      isLastQuestionAnswered: isLastQuestion
     }));
-  
-    // Then update the question index after a delay
-    setTimeout(() => {
-      setQuizState(prev => {
-        const nextIndex = prev.currentQuestionIndex + 1;
-        return {
+
+    if (!isLastQuestion) {
+      // Handle non-last questions with delay
+      setTimeout(() => {
+        setQuizState(prev => ({
           ...prev,
-          currentQuestionIndex: nextIndex,
-          isComplete: nextIndex >= questions.length
-        };
-      });
-    }, 500); // 500ms delay
+          currentQuestionIndex: prev.currentQuestionIndex + 1
+        }));
+      }, 500);
+    }
   };
+
+  // Use useEffect to handle the last question calculations
+  useEffect(() => {
+    const calculateOptions = async () => {
+      if (!quizState.isLastQuestionAnswered) return;
+
+      try {
+        setSubmissionState(prev => ({ ...prev, isLoading: true }));
+        
+        const score = calculateQuizScore(questions, quizState.answers);
+        const response = await fetch('/api/investment-options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ score }),
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch investment options');
+        const { options } = await response.json();
+
+        setSubmissionState(prev => ({
+          ...prev,
+          isLoading: false,
+          matchedOptionsCount: options.length,
+          investmentOptions: options,
+        }));
+
+        // Only set complete after options are calculated
+        setQuizState(prev => ({
+          ...prev,
+          isComplete: true
+        }));
+
+      } catch (error) {
+        console.error('Error calculating investment options:', error);
+        setSubmissionState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        }));
+      }
+    };
+
+    calculateOptions();
+  }, [quizState.isLastQuestionAnswered, questions]);
 
   const handleBack = () => {
     setQuizState(prev => {
@@ -72,7 +128,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
         ...prev,
         currentQuestionIndex: prevIndex,
         answers: remainingAnswers,
-        isComplete: false
+        isComplete: false,
+        isLastQuestionAnswered: false
       };
     });
   };
@@ -105,26 +162,10 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
 
       const { leadId } = await submitResponse.json();
 
-      const optionsResponse = await fetch('/api/investment-options', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ score }),
-      });
-
-      if (!optionsResponse.ok) {
-        throw new Error('Failed to fetch investment options');
-      }
-
-      const { options } = await optionsResponse.json();
-      const matchedOptions = findMatchingInvestments(score, options);
-
       setSubmissionState(prev => ({
         ...prev,
         isLoading: false,
         leadId,
-        investmentOptions: matchedOptions,
       }));
 
     } catch (error) {
@@ -156,17 +197,17 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
           exit={{ opacity: 0, y: -20 }}
           className="relative mt-8"
         >
-          {!quizState.isComplete ? (
+          {quizState.isLastQuestionAnswered && submissionState.isLoading ? (
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+              <LoadingSpinner size={50} />
+              <p className="mt-4 text-gray-600">Analyzing your responses...</p>
+            </div>
+          ) : !quizState.isComplete ? (
             <QuestionCard
               question={questions[quizState.currentQuestionIndex]}
               onAnswer={handleAnswer}
               selectedOption={quizState.answers[questions[quizState.currentQuestionIndex].id]}
             />
-          ) : submissionState.isLoading ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-              <LoadingSpinner size={50} />
-              <p className="mt-4 text-gray-600">Analyzing your responses...</p>
-            </div>
           ) : submissionState.leadId ? (
             <ResultsCard
               leadId={submissionState.leadId}
@@ -174,7 +215,10 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
               error={submissionState.error || undefined}
             />
           ) : (
-            <EmailCaptureForm onSubmit={handleEmailSubmit} />
+            <EmailCaptureForm 
+              onSubmit={handleEmailSubmit}
+              matchedOptionsCount={submissionState.matchedOptionsCount}
+            />
           )}
         </MotionDiv>
       </AnimatePresence>

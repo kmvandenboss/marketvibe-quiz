@@ -1,6 +1,6 @@
 {
-  "id": "479afb96-2345-48b4-9f75-11150576199b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "1d48e103-3d94-44e8-aa3a-1e198411c123",
+  "prevId": "479afb96-2345-48b4-9f75-11150576199b",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -216,18 +216,17 @@
           "primaryKey": false,
           "notNull": true
         },
+        "clicked_links": {
+          "name": "clicked_links",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "score": {
           "name": "score",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
-        },
-        "clicked_links": {
-          "name": "clicked_links",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'"
         },
         "is_accredited": {
           "name": "is_accredited",
@@ -238,16 +237,16 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "default": "now()"
         }
       },

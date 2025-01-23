@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "generate": "drizzle-kit generate:pg",
-    "migrate": "tsx db/migrate.ts",
+    "migrate": "tsx src/db/migrate.ts",
     "studio": "drizzle-kit studio",
     "test:db": "tsx scripts/test-db.ts",
     "introspect": "drizzle-kit introspect:pg"
