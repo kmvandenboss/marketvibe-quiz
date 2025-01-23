@@ -211,7 +211,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
             }}
             className="font-semibold text-lg text-green-800"
           >
-            Select an answer below to begin your assessment 👇
+            Select an answer below to begin 👇
           </MotionDiv>
         </MotionDiv>
       )}
