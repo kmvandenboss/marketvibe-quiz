@@ -13,6 +13,7 @@ import { calculateQuizScore, findMatchingInvestments } from '@/utils/quiz-utils'
 interface QuizContainerProps {
   questions: Question[];
   onComplete?: (answers: Record<string, string>, email: string) => Promise<void>;
+  onStart?: () => void;
 }
 
 interface QuizContainerState {  // Renamed from QuizState
@@ -33,7 +34,11 @@ interface SubmissionState {
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
-export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onComplete }) => {
+export const QuizContainer: React.FC<QuizContainerProps> = ({ 
+  questions, 
+  onComplete,
+  onStart
+}) => {
   const [quizState, setQuizState] = useState<QuizContainerState>({  // Updated type
     currentQuestionIndex: 0,
     answers: {},
@@ -50,6 +55,11 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
   });
 
   const handleAnswer = async (questionId: string, optionId: string) => {
+    // If this is the first answer, trigger onStart
+    if (Object.keys(quizState.answers).length === 0 && onStart) {
+      onStart();
+    }
+  
     const isLastQuestion = quizState.currentQuestionIndex === questions.length - 1;
     
     // Update answers first
@@ -58,7 +68,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({ questions, onCompl
       answers: { ...prev.answers, [questionId]: optionId },
       isLastQuestionAnswered: isLastQuestion
     }));
-
+  
     if (!isLastQuestion) {
       // Handle non-last questions with delay
       setTimeout(() => {
