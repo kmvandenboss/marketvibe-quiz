@@ -1,7 +1,7 @@
 // src/components/quiz/QuizContainer.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, MotionProps } from 'framer-motion';
-import { Question, InvestmentOption } from '@/types/quiz';  // Remove QuizState from import
+import { Question, InvestmentOption } from '@/types/quiz';
 import QuestionCard from './QuestionCard';
 import { ProgressIndicator } from './ProgressIndicator';
 import EmailCaptureForm from './EmailCaptureForm';
@@ -9,14 +9,15 @@ import ResultsCard from './ResultsCard';
 import LoadingSpinner from './LoadingSpinner';
 import Button, { MotionButton } from '@/components/ui/button';
 import { calculateQuizScore, findMatchingInvestments } from '@/utils/quiz-utils';
+import { defaultQuizQuestions } from '@/lib/quiz-data';
 
 interface QuizContainerProps {
-  questions: Question[];
+  questions?: Question[];
   onComplete?: (answers: Record<string, string>, email: string) => Promise<void>;
   onStart?: () => void;
 }
 
-interface QuizContainerState {  // Renamed from QuizState
+interface QuizContainerState {
   currentQuestionIndex: number;
   answers: Record<string, string>;
   isComplete: boolean;
@@ -35,11 +36,11 @@ type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 export const QuizContainer: React.FC<QuizContainerProps> = ({ 
-  questions, 
+  questions = defaultQuizQuestions,
   onComplete,
   onStart
 }) => {
-  const [quizState, setQuizState] = useState<QuizContainerState>({  // Updated type
+  const [quizState, setQuizState] = useState<QuizContainerState>({
     currentQuestionIndex: 0,
     answers: {},
     isComplete: false,
@@ -199,7 +200,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         </div>
       )}
 
-{quizState.currentQuestionIndex === 0 && (
+      {quizState.currentQuestionIndex === 0 && (
         <MotionDiv
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,7 +226,6 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           </MotionDiv>
         </MotionDiv>
       )}
-
 
       <AnimatePresence mode="wait">
         <MotionDiv
