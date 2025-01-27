@@ -15,8 +15,33 @@ const MotionButton = motion.button as React.FC<MotionButtonProps>;
 const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOptionsCount }) => {
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const sendConversion = async (email: string) => {
+    try {
+      const response = await fetch('/api/meta-conversion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          eventName: 'Lead',
+          eventData: {
+            matched_options: matchedOptionsCount,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to send conversion event');
+      }
+    } catch (error) {
+      console.error('Error sending conversion:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,7 +50,21 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
       return;
     }
     
-    onSubmit(email);
+    setIsSubmitting(true);
+    
+    try {
+      // Send conversion event to Meta
+      await sendConversion(email);
+      
+      // Call the original onSubmit handler
+      onSubmit(email);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Still call onSubmit even if conversion tracking fails
+      onSubmit(email);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,6 +110,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
             }`}
             placeholder="your@email.com"
             required
+            disabled={isSubmitting}
           />
           {!isValid && (
             <MotionDiv
@@ -91,6 +131,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           type="submit"
+          disabled={isSubmitting}
           style={{
             width: '100%',
             backgroundColor: '#2563EB',
@@ -98,10 +139,11 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
             padding: '0.75rem 1.5rem',
             borderRadius: '0.5rem',
             fontWeight: 500,
-            transition: 'background-color 200ms'
+            transition: 'background-color 200ms',
+            opacity: isSubmitting ? 0.7 : 1,
           }}
         >
-          Show My Results
+          {isSubmitting ? 'Processing...' : 'Show My Results'}
         </MotionButton>
       </form>
       
