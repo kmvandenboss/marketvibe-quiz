@@ -4,6 +4,9 @@ import { DashboardMetrics } from '../../components/dashboard/DashboardMetrics';
 import { LeadsTable } from '../../components/dashboard/LeadsTable';
 import type { Lead, DashboardMetrics as DashboardMetricsType } from '../../types/dashboard';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const metrics: DashboardMetricsType = await getDashboardMetrics();
   const leads: Lead[] = await getLeadsList();

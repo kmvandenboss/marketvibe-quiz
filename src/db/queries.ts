@@ -4,7 +4,7 @@ import { questions, leads, investmentOptions, analyticsEvents } from './schema';
 
 export async function getQuizQuestions() {
   try {
-    const allQuestions = await db.select()
+    const allQuestions = await db().select()
       .from(questions)
       .orderBy(questions.order);
     return allQuestions;
@@ -16,7 +16,7 @@ export async function getQuizQuestions() {
 
 export async function getInvestmentOptions() {
   try {
-    const options = await db.select()
+    const options = await db().select()
       .from(investmentOptions)
       .orderBy(investmentOptions.priority);
     
@@ -49,7 +49,7 @@ export async function submitQuizResponse({
     const leadId = crypto.randomUUID();
     const now = new Date().toISOString();
     
-    await db.insert(leads).values({
+    await db().insert(leads).values({
       id: leadId,
       email,
       name,
@@ -77,7 +77,7 @@ export async function trackLinkClick({
 }) {
   try {
     // Get current lead data with explicit type casting
-    const lead = await db.select({
+    const lead = await db().select({
       id: leads.id,
       clickedLinks: leads.clickedLinks
     })
@@ -108,7 +108,7 @@ export async function trackLinkClick({
 
     // Update with new link
     const updatedLinks = [...currentLinks, link];
-    await db.update(leads)
+    await db().update(leads)
       .set({ 
         clickedLinks: updatedLinks,
         updatedAt: new Date().toISOString()
@@ -130,7 +130,7 @@ export async function trackLinkClick({
 
 export async function getDashboardMetrics() {
   try {
-    const leadsList = await db.select().from(leads);
+    const leadsList = await db().select().from(leads);
     
     // Calculate metrics
     const totalLeads = leadsList.length;
@@ -157,9 +157,14 @@ export async function getDashboardMetrics() {
 
 export async function getLeadsList() {
   try {
-    const leadsList = await db.select()
+    const leadsList = await db().select()
       .from(leads)
-      .orderBy(desc(leads.createdAt));
+      .orderBy(desc(leads.createdAt))
+      .limit(100); // Add a reasonable limit for performance
+
+    if (!leadsList || !Array.isArray(leadsList)) {
+      throw new Error('Invalid response from database');
+    }
 
     return leadsList.map((lead) => ({
       id: lead.id,
@@ -194,7 +199,7 @@ export async function logAnalyticsEvent({
   sessionId?: string;
 }) {
   try {
-    await db.insert(analyticsEvents).values({
+    await db().insert(analyticsEvents).values({
       eventType,
       leadId,
       questionId,
