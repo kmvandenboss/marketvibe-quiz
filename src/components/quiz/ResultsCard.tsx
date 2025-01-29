@@ -1,3 +1,4 @@
+// src/components/quiz/ResultsCard.tsx
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvestmentOption } from '@/types/quiz';
@@ -35,9 +36,9 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
       return;
     }
 
-    // If already tracked or at limit, just open the link
+    // If already tracked or at limit, redirect directly
     if (clickedLinks.length >= 3 || clickedLinks.includes(link)) {
-      window.open(link, '_blank');
+      window.location.href = `/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
       return;
     }
 
@@ -45,7 +46,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
     setIsTracking(true);
     
     try {
-      // Send tracking request
+      // Track click first
       const response = await fetch('/api/track-click', {
         method: 'POST',
         headers: {
@@ -55,9 +56,6 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
       });
 
       const data = await response.json();
-      
-      // Open the link regardless of tracking success
-      window.open(link, '_blank');
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to track link');
@@ -67,8 +65,13 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
       if (data.wasTracked) {
         setClickedLinks(prev => [...prev, link]);
       }
+
+      // Redirect through our endpoint
+      window.location.href = `/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
     } catch (error) {
       console.error('Error tracking link click:', error);
+      // Still redirect on error to ensure user reaches destination
+      window.location.href = `/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
     } finally {
       setIsTracking(false);
     }
