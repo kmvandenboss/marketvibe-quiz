@@ -38,7 +38,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
 
     // If already tracked or at limit, redirect directly
     if (clickedLinks.length >= 3 || clickedLinks.includes(link)) {
-      window.location.href = `/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
+      window.open(`/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
       return;
     }
 
@@ -66,12 +66,12 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
         setClickedLinks(prev => [...prev, link]);
       }
 
-      // Redirect through our endpoint
-      window.location.href = `/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
+      // Open redirect in new tab
+      window.open(`/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
     } catch (error) {
       console.error('Error tracking link click:', error);
       // Still redirect on error to ensure user reaches destination
-      window.location.href = `/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
+      window.open(`/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
     } finally {
       setIsTracking(false);
     }
@@ -115,7 +115,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
             >
               <div className="flex items-center space-x-3">
                 <LoadingSpinner size={20} />
-                <p className="text-blue-800">Tracking your selection...</p>
+                <p className="text-blue-800">Opening your investment idea...</p>
               </div>
             </MotionDiv>
           )}
