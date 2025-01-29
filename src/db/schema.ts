@@ -19,6 +19,14 @@ export const investmentOptions = pgTable("investment_options", {
   link: text("link").notNull(),
   tags: jsonb("tags").notNull(),
   priority: integer("priority").notNull(),
+  // New columns
+  logo_url: text("logo_url").notNull(),
+  company_name: text("company_name").notNull(),
+  returns_text: text("returns_text").notNull(),
+  minimum_investment_text: text("minimum_investment_text").notNull(),
+  investment_type: text("investment_type").notNull(),
+  key_features: jsonb("key_features").notNull(),
+  // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });

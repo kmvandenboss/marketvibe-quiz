@@ -23,7 +23,8 @@ export async function getInvestmentOptions() {
     // Ensure tags are properly typed as string[]
     return options.map(option => ({
       ...option,
-      tags: option.tags as string[]
+      tags: option.tags as string[],
+      key_features: option.key_features as string[]
     }));
   } catch (error) {
     console.error('Error fetching investment options:', error);

@@ -25,12 +25,14 @@ Next.js 13+ app directory structure:
 - `layout.tsx` - Root layout component
 - `page.tsx` - Home page component
 - `globals.css` - Global styles
-- `/quiz` - Quiz page route
-  - `page.tsx` - Quiz page component
-- `/high-yield-quiz` - High Yield Investment Quiz route
-  - `page.tsx` - High Yield Quiz page component
 - `/dashboard` - Admin Dashboard route
   - `page.tsx` - Dashboard page component
+- `/error` - Error handling route
+  - `page.tsx` - Error page component
+- `/high-yield-quiz` - High Yield Investment Quiz route
+  - `page.tsx` - High Yield Quiz page component
+- `/quiz` - Quiz page route
+  - `page.tsx` - Quiz page component
 
 ### API Routes (`/src/app/api`)
 - `/investment-options` - Investment options API endpoint
@@ -38,6 +40,8 @@ Next.js 13+ app directory structure:
 - `/meta-conversion` - Meta Pixel conversion tracking endpoint
   - `route.ts` - API route handler
 - `/questions` - Quiz questions API endpoint
+  - `route.ts` - API route handler
+- `/redirect` - URL redirection endpoint
   - `route.ts` - API route handler
 - `/submit` - Quiz submission endpoint
   - `route.ts` - API route handler

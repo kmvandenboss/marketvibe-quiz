@@ -23,6 +23,13 @@ export interface InvestmentOption {
   link: string;
   tags: string[];
   priority: number;
+  // New fields
+  logo_url: string;
+  company_name: string;
+  returns_text: string;
+  minimum_investment_text: string;
+  investment_type: string;
+  key_features: string[];
 }
 
 export interface QuizState {
