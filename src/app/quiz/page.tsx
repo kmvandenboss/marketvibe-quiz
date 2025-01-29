@@ -101,45 +101,16 @@ export default function QuizPage() {
     }
   };
 
-  const handleQuizComplete = async (answers: Record<string, string>, email: string) => {
-    try {
-      const response = await fetch('/api/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          responses: answers,
-          score: calculateScore(answers), // We'll implement this function later
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit quiz');
-      }
-
-      const data = await response.json();
-      console.log('Quiz submitted successfully:', data);
-      
-      // You can add success handling here (e.g., show results, redirect, etc.)
-    } catch (error) {
-      console.error('Error submitting quiz:', error);
-      // You can add error handling here (e.g., show error message)
+    // Optional callback for tracking or analytics
+    const handleQuizComplete = async (answers: Record<string, string>, email: string) => {
+      // You can add any post-submission logic here that doesn't involve creating a lead
+      // For example: analytics tracking, showing a success message, etc.
+      console.log('Quiz completed:', { email, answers });
+    };
+  
+    if (error) {
+      console.warn(error);
     }
-  };
-
-  // For now, return a placeholder score calculation
-  const calculateScore = (answers: Record<string, string>) => {
-    return Object.keys(answers).reduce((acc, key) => ({
-      ...acc,
-      [key]: 1,
-    }), {});
-  };
-
-  if (error) {
-    console.warn(error); // We'll implement proper error handling later
-  }
 
   return (
     <main className="min-h-screen bg-gray-50">

@@ -8,7 +8,7 @@ import EmailCaptureForm from './EmailCaptureForm';
 import ResultsCard from './ResultsCard';
 import LoadingSpinner from './LoadingSpinner';
 import Button, { MotionButton } from '@/components/ui/button';
-import { calculateQuizScore, findMatchingInvestments } from '@/utils/quiz-utils';
+import { calculateQuizScore } from '@/utils/quiz-utils';
 import { defaultQuizQuestions } from '@/lib/quiz-data';
 
 interface QuizContainerProps {
@@ -22,6 +22,7 @@ interface QuizContainerState {
   answers: Record<string, string>;
   isComplete: boolean;
   isLastQuestionAnswered: boolean;
+  calculatedScore?: Record<string, number>; // Added to store score
 }
 
 interface SubmissionState {
@@ -89,27 +90,30 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
       try {
         setSubmissionState(prev => ({ ...prev, isLoading: true }));
         
-        const score = calculateQuizScore(questions, quizState.answers);
+        // Calculate score once and store it
+        const calculatedScore = calculateQuizScore(questions, quizState.answers);
+        
         const response = await fetch('/api/investment-options', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ score }),
+          body: JSON.stringify({ score: calculatedScore }),
         });
 
         if (!response.ok) throw new Error('Failed to fetch investment options');
         const { options } = await response.json();
+
+        // Store the calculated score in state
+        setQuizState(prev => ({
+          ...prev,
+          calculatedScore,
+          isComplete: true
+        }));
 
         setSubmissionState(prev => ({
           ...prev,
           isLoading: false,
           matchedOptionsCount: options.length,
           investmentOptions: options,
-        }));
-
-        // Only set complete after options are calculated
-        setQuizState(prev => ({
-          ...prev,
-          isComplete: true
         }));
 
       } catch (error) {
@@ -140,12 +144,22 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         currentQuestionIndex: prevIndex,
         answers: remainingAnswers,
         isComplete: false,
-        isLastQuestionAnswered: false
+        isLastQuestionAnswered: false,
+        calculatedScore: undefined // Clear the calculated score when going back
       };
     });
   };
 
   const handleEmailSubmit = async (email: string) => {
+    if (!quizState.calculatedScore) {
+      // If somehow we don't have a score yet, calculate it now
+      const score = calculateQuizScore(questions, quizState.answers);
+      setQuizState(prev => ({
+        ...prev,
+        calculatedScore: score
+      }));
+    }
+
     setSubmissionState(prev => ({ ...prev, isLoading: true, error: null }));
     
     if (onComplete) {
@@ -153,8 +167,9 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     }
 
     try {
-      const score = calculateQuizScore(questions, quizState.answers);
-
+      // Ensure we're using the calculated score
+      const score = quizState.calculatedScore || calculateQuizScore(questions, quizState.answers);
+      
       const submitResponse = await fetch('/api/submit', {
         method: 'POST',
         headers: {
@@ -163,7 +178,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         body: JSON.stringify({
           email,
           responses: quizState.answers,
-          score,
+          score
         }),
       });
 

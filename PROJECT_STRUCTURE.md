@@ -35,6 +35,8 @@ Next.js 13+ app directory structure:
 ### API Routes (`/src/app/api`)
 - `/investment-options` - Investment options API endpoint
   - `route.ts` - API route handler
+- `/meta-conversion` - Meta Pixel conversion tracking endpoint
+  - `route.ts` - API route handler
 - `/questions` - Quiz questions API endpoint
   - `route.ts` - API route handler
 - `/submit` - Quiz submission endpoint
@@ -43,6 +45,7 @@ Next.js 13+ app directory structure:
   - `route.ts` - API route handler
 
 ### Components (`/src/components`)
+- `MetaPixel.tsx` - Meta Pixel integration component
 - `/dashboard` - Dashboard components
   - `DashboardMetrics.tsx` - Dashboard metrics display
   - `LeadsTable.tsx` - Table for displaying leads
@@ -77,12 +80,14 @@ Next.js 13+ app directory structure:
 
 ### Library (`/src/lib`)
 - `db.ts` - Database utility functions
+- `quiz-data.ts` - Quiz data and configuration
 
 ### Types (`/src/types`)
 - `quiz.ts` - Quiz-related TypeScript types
 - `dashboard.ts` - Dashboard-related TypeScript types
 
 ### Utils (`/src/utils`)
+- `meta-pixel.ts` - Meta Pixel tracking utilities
 - `quiz-utils.ts` - Quiz helper functions
 
 ## Public Assets (`/public`)

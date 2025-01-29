@@ -18,12 +18,22 @@ export default function MetaPixel() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Track page views
+    // Track page views and handle fbclid parameter
     if (window.fbq) {
+      // Track PageView
       window.fbq('track', 'PageView');
+
+      // Handle Facebook Click ID if present in URL
+      const fbclid = searchParams.get('fbclid');
+      if (fbclid) {
+        const now = new Date();
+        const expires = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        document.cookie = `_fbc=fb.1.${Date.now()}.${fbclid}; expires=${expires.toUTCString()}; path=/`;
+      }
     }
   }, [pathname, searchParams]);
 
+  // Don't render anything if pixel ID is not available
   if (!FB_PIXEL_ID) {
     return null;
   }

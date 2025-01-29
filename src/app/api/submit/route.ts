@@ -4,6 +4,10 @@ import { z } from 'zod';
 import { submitQuizResponse, logAnalyticsEvent } from '@/db/queries';
 import type { QuizResponse } from '@/types/quiz';
 
+// Constants for accredited investor question
+const ACCREDITED_QUESTION_ID = 'a2d065b8-8ba4-4846-b46c-513ec19842c4';
+const ACCREDITED_YES_ANSWER = '5a';
+
 // Zod schema for request validation
 const QuizSubmissionSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -31,12 +35,16 @@ export async function POST(request: Request) {
 
     const { email, name, responses, score } = validationResult.data;
 
+    // Check for accredited investor status from the responses
+    const isAccredited = responses[ACCREDITED_QUESTION_ID] === ACCREDITED_YES_ANSWER;
+
     // Submit quiz response to database
     const leadId = await submitQuizResponse({
       email,
       name,
       responses,
-      score
+      score,
+      isAccredited
     });
 
     // Log analytics event
@@ -45,7 +53,8 @@ export async function POST(request: Request) {
       leadId,
       data: {
         questionCount: Object.keys(responses).length,
-        hasName: !!name
+        hasName: !!name,
+        isAccredited
       }
     });
 
