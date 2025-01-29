@@ -1,6 +1,6 @@
-// src/components/quiz/EmailCaptureForm.tsx
 import React, { useState } from 'react';
 import { motion, MotionProps } from 'framer-motion';
+import Link from 'next/link';
 
 interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
@@ -149,7 +149,10 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
       
       <p className="mt-4 text-xs text-gray-500 text-center">
         By submitting, you agree to receive communication about your investment strategy. 
-        Your information will be handled according to our privacy policy.
+        Your information will be handled according to our{' '}
+        <Link href="/privacy-policy" className="text-blue-600 hover:underline">
+          privacy policy
+        </Link>.
       </p>
     </MotionDiv>
   );
