@@ -26,9 +26,9 @@ export default function HighYieldQuizPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-grow">
-        <div className="container max-w-6xl mx-auto px-4 py-6">
+        <div className="container max-w-6xl mx-auto px-4 py-3 md:py-6">
           {/* Logo and stats section - always visible but resizes */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4 md:mb-8">
             <div className={quizStarted ? "w-[15%]" : "w-[20%]"}>
               <Image
                 src="/images/MarketVibe-logo.png"
@@ -53,10 +53,10 @@ export default function HighYieldQuizPage() {
                   exit={{ opacity: 0 }}
                   className="text-center"
                 >
-                  <h1 className="text-2xl md:text-4xl font-bold mb-4">
+                  <h1 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">
                     Discover Your Perfect High-Yield Investment Strategy in 60 Seconds
                   </h1>
-                  <p className="text-gray-600 mb-8">
+                  <p className="text-gray-600 mb-6 md:mb-8">
                     Join 10,000+ investors who found their ideal high-yield opportunities
                   </p>
                 </MotionDiv>
@@ -66,7 +66,7 @@ export default function HighYieldQuizPage() {
             <QuizContainer onStart={handleQuizStart} />
 
             {!quizStarted && (
-              <p className="text-center text-gray-600 mt-4">
+              <p className="text-center text-gray-600 mt-3 md:mt-4">
                 Free personalized high-yield investment ideas delivered instantly
               </p>
             )}
