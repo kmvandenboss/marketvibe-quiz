@@ -11,6 +11,7 @@ export interface Lead {
   name: string;
   isAccredited: boolean;
   score: Record<string, number>;
+  responses: Record<string, string>;
   clickedLinks: ClickedLink[];
   createdAt: string | null;
 }

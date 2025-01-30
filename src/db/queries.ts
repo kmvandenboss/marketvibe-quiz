@@ -197,6 +197,7 @@ export async function getLeadsList() {
       name: lead.name || '',
       isAccredited: lead.isAccredited || false,
       score: lead.score as Record<string, number>,
+      responses: lead.responses as Record<string, string>,
       clickedLinks: Array.isArray(lead.clickedLinks) 
         ? (lead.clickedLinks as string[] | Array<{ url: string; timestamp: string }>).map(click => {
             // Handle old format (string) vs new format (object)
