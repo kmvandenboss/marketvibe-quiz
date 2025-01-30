@@ -97,7 +97,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
       className="bg-white rounded-lg shadow-lg p-6"
     >
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        Your Personalized Investment Recommendations
+        Your Personalized Investment Ideas
       </h2>
 
       <div className="space-y-6">

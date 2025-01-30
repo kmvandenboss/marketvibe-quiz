@@ -96,7 +96,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
         {matchedOptionsCount === 1 ? 'idea' : 'ideas'} for you
       </h2>
       <p className="text-gray-600 mb-6">
-        Enter your email below to see your personalized investment recommendations.
+        Enter your email below to see your personalized investment ideas.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-4">
