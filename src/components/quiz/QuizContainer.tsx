@@ -57,10 +57,34 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
   });
 
   const handleAnswer = async (questionId: string, optionId: string) => {
-    // If this is the first answer, trigger onStart
-    if (Object.keys(quizState.answers).length === 0 && onStart) {
-      onStart();
+    // If this is the first answer, trigger onStart and track quiz start
+    if (Object.keys(quizState.answers).length === 0) {
+      if (onStart) {
+        onStart();
+      }
+      
+      // Log quiz start
+      await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'QUIZ_START',
+          questionIndex: 0
+        })
+      });
     }
+  
+    // Track question answer
+    await fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventType: 'QUESTION_ANSWERED',
+        questionId,
+        questionIndex: quizState.currentQuestionIndex,
+        data: { answer: optionId }
+      })
+    });
   
     const isLastQuestion = quizState.currentQuestionIndex === questions.length - 1;
     
@@ -78,7 +102,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           ...prev,
           currentQuestionIndex: prev.currentQuestionIndex + 1
         }));
-      }, 500);
+      }, 400);
     }
   };
 

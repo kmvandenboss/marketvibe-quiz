@@ -131,24 +131,43 @@ export async function trackLinkClick({
 
 export async function getDashboardMetrics() {
   try {
-    const leadsList = await db().select().from(leads);
+    const [leadsList, analyticsData] = await Promise.all([
+      db().select().from(leads),
+      db().select().from(analyticsEvents)
+    ]);
     
-    // Calculate metrics
+    // Basic metrics
     const totalLeads = leadsList.length;
     const accreditedLeads = leadsList.filter(lead => lead.isAccredited).length;
     const conversionRate = totalLeads > 0 ? (accreditedLeads / totalLeads) * 100 : 0;
-    
-    // Get leads with link clicks
     const leadsWithClicks = leadsList.filter(lead => 
       Array.isArray(lead.clickedLinks) && lead.clickedLinks.length > 0
     ).length;
+
+    // Funnel metrics
+    const quizStarts = analyticsData.filter(event => event.eventType === 'QUIZ_START').length;
+    const questionAnswers = new Array(6).fill(0); // Array for each question
+    analyticsData
+      .filter(event => event.eventType === 'QUESTION_ANSWERED')
+      .forEach(event => {
+        if (event.questionIndex !== null) {
+          questionAnswers[event.questionIndex] = questionAnswers[event.questionIndex] + 1;
+        }
+      });
+
+    const emailSubmissions = analyticsData.filter(event => event.eventType === 'QUIZ_SUBMISSION').length;
 
     return {
       totalLeads,
       accreditedLeads,
       conversionRate: Number(conversionRate.toFixed(2)),
       leadsWithClicks,
-      clickThroughRate: totalLeads > 0 ? (leadsWithClicks / totalLeads) * 100 : 0
+      clickThroughRate: totalLeads > 0 ? (leadsWithClicks / totalLeads) * 100 : 0,
+      // Funnel metrics
+      quizStarts,
+      questionAnswers,
+      emailSubmissions,
+      quizCompletionRate: quizStarts > 0 ? (emailSubmissions / quizStarts) * 100 : 0
     };
   } catch (error) {
     console.error('Error fetching dashboard metrics:', error);
@@ -186,6 +205,7 @@ export async function logAnalyticsEvent({
   eventType,
   leadId,
   questionId,
+  questionIndex,
   data,
   userAgent,
   ipAddress,
@@ -194,6 +214,7 @@ export async function logAnalyticsEvent({
   eventType: string;
   leadId?: string;
   questionId?: string;
+  questionIndex?: number;
   data?: Record<string, any>;
   userAgent?: string;
   ipAddress?: string;
@@ -204,6 +225,7 @@ export async function logAnalyticsEvent({
       eventType,
       leadId,
       questionId,
+      questionIndex,
       data,
       userAgent,
       ipAddress,

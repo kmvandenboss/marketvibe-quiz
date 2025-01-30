@@ -53,6 +53,16 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
     setIsSubmitting(true);
     
     try {
+      // Track email submission for funnel analytics
+      await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'EMAIL_SUBMISSION',
+          data: { matchedOptionsCount }
+        })
+      });
+  
       // Send conversion event to Meta
       await sendConversion(email);
       
@@ -60,7 +70,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
       onSubmit(email);
     } catch (error) {
       console.error('Form submission error:', error);
-      // Still call onSubmit even if conversion tracking fails
+      // Still call onSubmit even if tracking fails
       onSubmit(email);
     } finally {
       setIsSubmitting(false);

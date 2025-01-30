@@ -19,6 +19,7 @@ export const investmentOptions = pgTable("investment_options", {
   link: text("link").notNull(),
   tags: jsonb("tags").notNull(),
   priority: integer("priority").notNull(),
+ 
   // New columns
   logo_url: text("logo_url").notNull(),
   company_name: text("company_name").notNull(),
@@ -50,6 +51,7 @@ export const analyticsEvents = pgTable("analytics_events", {
   eventType: text("event_type").notNull(),
   leadId: uuid("lead_id").references(() => leads.id),
   questionId: text("question_id"),
+  questionIndex: integer("question_index"),
   data: json("data"),
   userAgent: text("user_agent"),
   ipAddress: text("ip_address"),
