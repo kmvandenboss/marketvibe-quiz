@@ -57,7 +57,7 @@ export async function submitQuizResponse({
       responses,
       score,
       isAccredited,
-      clickedLinks: [],
+      clickedLinks: [] as Array<{ url: string; timestamp: string }>,
       createdAt: now,
       updatedAt: now
     });
@@ -77,7 +77,6 @@ export async function trackLinkClick({
   link: string;
 }) {
   try {
-    // Get current lead data with explicit type casting
     const lead = await db().select({
       id: leads.id,
       clickedLinks: leads.clickedLinks
@@ -90,25 +89,27 @@ export async function trackLinkClick({
       throw new Error(`Lead not found with ID: ${leadId}`);
     }
 
-    // Ensure clickedLinks is always an array
     const currentLinks = Array.isArray(lead[0].clickedLinks) 
-      ? lead[0].clickedLinks as string[]
+      ? (lead[0].clickedLinks as Array<{ url: string; timestamp: string }>)
       : [];
     
-    // Validate click limit
     if (currentLinks.length >= 3) {
       console.log(`Click limit reached for lead ${leadId}`);
       return false;
     }
 
-    // Check if link is already tracked
-    if (currentLinks.includes(link)) {
+    if (currentLinks.some(click => click.url === link)) {
       console.log(`Link ${link} already tracked for lead ${leadId}`);
       return false;
     }
 
-    // Update with new link
-    const updatedLinks = [...currentLinks, link];
+    const updatedLinks = [
+      ...currentLinks,
+      {
+        url: link,
+        timestamp: new Date().toISOString()
+      }
+    ];
     await db().update(leads)
       .set({ 
         clickedLinks: updatedLinks,
@@ -177,10 +178,14 @@ export async function getDashboardMetrics() {
 
 export async function getLeadsList() {
   try {
+    // First get all investment options for lookup
+    const options = await db().select().from(investmentOptions);
+    const optionsMap = new Map(options.map(opt => [opt.link, opt]));
+
     const leadsList = await db().select()
       .from(leads)
       .orderBy(desc(leads.createdAt))
-      .limit(100); // Add a reasonable limit for performance
+      .limit(100);
 
     if (!leadsList || !Array.isArray(leadsList)) {
       throw new Error('Invalid response from database');
@@ -192,7 +197,18 @@ export async function getLeadsList() {
       name: lead.name || '',
       isAccredited: lead.isAccredited || false,
       score: lead.score as Record<string, number>,
-      clickedLinks: Array.isArray(lead.clickedLinks) ? lead.clickedLinks as string[] : [],
+      clickedLinks: Array.isArray(lead.clickedLinks) 
+        ? (lead.clickedLinks as string[] | Array<{ url: string; timestamp: string }>).map(click => {
+            // Handle old format (string) vs new format (object)
+            const url = typeof click === 'string' ? click : click.url;
+            const timestamp = typeof click === 'string' ? null : click.timestamp;
+            return {
+              url,
+              clickedAt: timestamp,
+              investmentName: optionsMap.get(url)?.title || 'Unknown Investment'
+            };
+          })
+        : [],
       createdAt: lead.createdAt
     }));
   } catch (error) {

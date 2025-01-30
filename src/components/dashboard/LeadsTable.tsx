@@ -37,7 +37,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
             <TableHead>Email</TableHead>
             <TableHead>Score</TableHead>
             <TableHead>Accredited</TableHead>
-            <TableHead>Links Clicked</TableHead>
+            <TableHead>Clicked Investments</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -57,15 +57,24 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
                 </span>
               </TableCell>
               <TableCell>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-col gap-1">
                   {lead.clickedLinks.map((link, index) => (
-                    <span
+                    <div
                       key={index}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
-                      title={link}
+                      className="inline-flex items-center gap-2"
                     >
-                      Link {index + 1}
-                    </span>
+                      <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                        {link.investmentName || 'Unknown Investment'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(link.clickedAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
                   ))}
                 </div>
               </TableCell>

@@ -1,11 +1,17 @@
 // /src/types/dashboard.ts
+interface ClickedLink {
+  investmentName: string;
+  clickedAt: string;
+  url: string;
+}
+
 export interface Lead {
   id: string;
   email: string;
   name: string;
   isAccredited: boolean;
   score: Record<string, number>;
-  clickedLinks: string[];
+  clickedLinks: ClickedLink[];
   createdAt: string | null;
 }
 

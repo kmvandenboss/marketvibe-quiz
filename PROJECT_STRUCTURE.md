@@ -9,6 +9,8 @@ This document provides an overview of the project structure and organization.
 - `drizzle.config.ts` - Drizzle ORM configuration
 - `eslint.config.mjs` - ESLint configuration
 - `global.d.ts` - Global TypeScript declarations
+- `hash-password.ts` - Password hashing utility script
+- `hashed-password.ts` - Generated hashed passwords
 - `next.config.js` - Next.js configuration
 - `package.json` - Project dependencies and scripts
 - `package-lock.json` - Locked dependency versions
@@ -19,6 +21,8 @@ This document provides an overview of the project structure and organization.
 
 ## Source Code (`/src`)
 
+- `middleware.ts` - Next.js middleware for authentication and routing
+
 ### App Directory (`/src/app`)
 Next.js 13+ app directory structure:
 - `favicon.ico` - Website favicon
@@ -28,11 +32,16 @@ Next.js 13+ app directory structure:
 - `/contact` - Contact page route
   - `page.tsx` - Contact page component
 - `/dashboard` - Admin Dashboard route
+  - `layout.tsx` - Dashboard layout component
   - `page.tsx` - Dashboard page component
+  - `/users` - User management route
+    - `page.tsx` - Users page component
 - `/error` - Error handling route
   - `page.tsx` - Error page component
 - `/high-yield-quiz` - High Yield Investment Quiz route
   - `page.tsx` - High Yield Quiz page component
+- `/login` - Authentication route
+  - `page.tsx` - Login page component
 - `/privacy-policy` - Privacy Policy route
   - `page.tsx` - Privacy Policy page component
 - `/quiz` - Quiz page route
@@ -41,6 +50,16 @@ Next.js 13+ app directory structure:
 ### API Routes (`/src/app/api`)
 - `/analytics` - Analytics tracking endpoints
   - `/track` - Analytics tracking endpoint
+    - `route.ts` - API route handler
+- `/auth` - Authentication endpoints
+  - `/login` - Login endpoint
+    - `route.ts` - API route handler
+  - `/logout` - Logout endpoint
+    - `route.ts` - API route handler
+- `/dashboard` - Dashboard data endpoints
+  - `/leads` - Leads data endpoint
+    - `route.ts` - API route handler
+  - `/metrics` - Metrics data endpoint
     - `route.ts` - API route handler
 - `/investment-options` - Investment options API endpoint
   - `route.ts` - API route handler
@@ -54,12 +73,16 @@ Next.js 13+ app directory structure:
   - `route.ts` - API route handler
 - `/track-click` - Click tracking endpoint
   - `route.ts` - API route handler
+- `/users` - User management endpoint
+  - `route.ts` - API route handler
 
 ### Components (`/src/components`)
 - `Footer.tsx` - Global footer component
 - `MetaPixel.tsx` - Meta Pixel integration component
 - `/dashboard` - Dashboard components
+  - `DashboardContent.tsx` - Main dashboard content wrapper
   - `DashboardMetrics.tsx` - Dashboard metrics display
+  - `DashboardNav.tsx` - Dashboard navigation component
   - `LeadsTable.tsx` - Table for displaying leads
 - `/quiz` - Quiz-specific components
   - `AnswerOption.tsx` - Individual answer option component
@@ -91,6 +114,7 @@ Next.js 13+ app directory structure:
     - `0001_snapshot.json` - Updated schema snapshot
 
 ### Library (`/src/lib`)
+- `auth.ts` - Authentication utilities and middleware
 - `db.ts` - Database utility functions
 - `quiz-data.ts` - Quiz data and configuration
 
