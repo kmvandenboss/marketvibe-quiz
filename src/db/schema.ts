@@ -67,3 +67,23 @@ export const analyticsMetrics = pgTable("analytics_metrics", {
   date: timestamp("date").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
+
+// New tables for user management
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey().notNull(),
+  email: text("email").notNull().unique(),
+  hashedPassword: text("hashed_password").notNull(),
+  name: text("name").notNull(),
+  role: text("role").notNull().default("user"), // 'admin' or 'user'
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  lastLogin: timestamp("last_login", { withTimezone: true }),
+});
+
+export const sessions = pgTable("sessions", {
+  id: uuid("id").defaultRandom().primaryKey().notNull(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

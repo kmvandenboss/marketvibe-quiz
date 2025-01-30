@@ -25,16 +25,23 @@ Next.js 13+ app directory structure:
 - `layout.tsx` - Root layout component
 - `page.tsx` - Home page component
 - `globals.css` - Global styles
+- `/contact` - Contact page route
+  - `page.tsx` - Contact page component
 - `/dashboard` - Admin Dashboard route
   - `page.tsx` - Dashboard page component
 - `/error` - Error handling route
   - `page.tsx` - Error page component
 - `/high-yield-quiz` - High Yield Investment Quiz route
   - `page.tsx` - High Yield Quiz page component
+- `/privacy-policy` - Privacy Policy route
+  - `page.tsx` - Privacy Policy page component
 - `/quiz` - Quiz page route
   - `page.tsx` - Quiz page component
 
 ### API Routes (`/src/app/api`)
+- `/analytics` - Analytics tracking endpoints
+  - `/track` - Analytics tracking endpoint
+    - `route.ts` - API route handler
 - `/investment-options` - Investment options API endpoint
   - `route.ts` - API route handler
 - `/meta-conversion` - Meta Pixel conversion tracking endpoint
@@ -49,6 +56,7 @@ Next.js 13+ app directory structure:
   - `route.ts` - API route handler
 
 ### Components (`/src/components`)
+- `Footer.tsx` - Global footer component
 - `MetaPixel.tsx` - Meta Pixel integration component
 - `/dashboard` - Dashboard components
   - `DashboardMetrics.tsx` - Dashboard metrics display
@@ -98,6 +106,13 @@ Next.js 13+ app directory structure:
 Static files served directly:
 - `/images` - Image assets
   - `MarketVibe-logo.png` - Company logo
+  - `alpine-notes.jpg` - Alpine Notes investment image
+  - `arrived-pcf.jpg` - Arrived PCF investment image
+  - `arrived-sfr-fund.jpg` - Arrived SFR Fund image
+  - `ascent-income-fund.jpg` - Ascent Income Fund image
+  - `globalx.jpg` - GlobalX investment image
+  - `groundfloor.jpg` - Groundfloor investment image
+  - `ishares.jpg` - iShares investment image
 - `file.svg` - File icon
 - `globe.svg` - Globe icon
 - `next.svg` - Next.js logo
