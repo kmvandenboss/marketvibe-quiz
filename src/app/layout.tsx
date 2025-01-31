@@ -11,6 +11,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "MarketVibe Investment Quiz",
   description: "Find your ideal investment strategy",
+  other: {
+    'impact-site-verification': '806b7c6d-8093-4d0f-a5ea-ecb52b93580e'
+  }
 };
 
 export default function RootLayout({
