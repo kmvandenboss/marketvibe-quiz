@@ -238,6 +238,7 @@ export async function getDefaultQuiz(): Promise<{ quiz: Quiz; questions: Questio
       slug: quiz.slug,
       title: quiz.title,
       description: quiz.description || undefined,
+      heading_text: quiz.heading_text,
       emailCaptureMessage: quiz.emailCaptureMessage,
       results_layout: quiz.results_layout as 'standard' | 'personality',
       personalityResults: quiz.personality_results as Quiz['personalityResults'],
