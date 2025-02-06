@@ -4,7 +4,7 @@ import { logAnalyticsEvent } from '@/db/queries';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { eventType, questionId, questionIndex, data } = body;
+    const { eventType, quizId, questionId, questionIndex, data } = body;
 
     // Get client info from request
     const userAgent = request.headers.get('user-agent') || undefined;
@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
     // Log the event
     await logAnalyticsEvent({
       eventType,
+      quizId,
       questionId,
       questionIndex,
       data,
