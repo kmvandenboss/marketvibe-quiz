@@ -17,7 +17,7 @@ const quizOptions = [
   {
     id: 'high-yield',
     text: 'Generate Passive Income',
-    path: '/high-yield-quiz'
+    path: '/quiz/high-yield-quiz'
   },
   {
     id: 'personality',

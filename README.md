@@ -197,6 +197,16 @@ src/
    - Update matching logic
    - Configure display components
 
+## Changelog
+
+### 2024-02-06
+- Fixed personality quiz scoring system:
+  - Restored personality type calculation in submit endpoint
+  - Added proper quiz data fetching with personalityResults
+  - Fixed server-side URL handling for quiz data retrieval
+  - Improved error handling for missing personality results
+  - Flow: QuizContainer → submit endpoint → personality calculation → results display
+
 ## Development Guidelines
 
 1. **Analytics Implementation**

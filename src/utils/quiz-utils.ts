@@ -89,14 +89,14 @@ export const determinePersonalityType = (
   scores: TagScores,
   personalityResults: PersonalityResult[]
 ): PersonalityTypeResult | undefined => {
-  // Get available personality types
-  const availableTypes = personalityResults.map(result => result.type);
+  // Get available personality types (lowercase for case-insensitive comparison)
+  const availableTypes = personalityResults.map(result => result.type.toLowerCase());
   
   // Find the highest scoring tag among available personality types only
   const highestScoringTag = Object.entries(scores).reduce(
     (highest, [tag, score]) => {
-      // Only consider tags that are valid personality types
-      if (availableTypes.includes(tag) && score > highest.score) {
+      // Only consider tags that are valid personality types (case-insensitive)
+      if (availableTypes.includes(tag.toLowerCase()) && score > highest.score) {
         return { tag, score };
       }
       return highest;
@@ -105,7 +105,9 @@ export const determinePersonalityType = (
   );
 
   // Find the personality result that matches the highest scoring tag
-  const matchedPersonality = personalityResults.find(result => result.type === highestScoringTag.tag);
+  const matchedPersonality = personalityResults.find(result => 
+    result.type.toLowerCase() === highestScoringTag.tag.toLowerCase()
+  );
   
   return matchedPersonality ? {
     personalityResult: matchedPersonality,
