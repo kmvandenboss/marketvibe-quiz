@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import QuizContainer from '@/components/quiz/QuizContainer';
-import type { Question } from '@/types/quiz';
+import QuizContainer from '@/components/quiz/base/QuizContainer';
+import type { Question, Quiz } from '@/lib/quiz/types';
 
 // Sample questions matching the database schema with tags and weights
 const sampleQuestions: Question[] = [
@@ -76,41 +76,33 @@ const sampleQuestions: Question[] = [
 ];
 
 export default function QuizPage() {
-  const [questions, setQuestions] = useState<Question[]>(sampleQuestions);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quizData, setQuizData] = useState<{ quiz: Quiz; questions: Question[] } | null>(null);
 
   useEffect(() => {
-    fetchQuestions();
+    const fetchQuizData = async () => {
+      try {
+        const response = await fetch('/api/quiz/investor-personality-quiz');
+        if (!response.ok) {
+          throw new Error('Failed to fetch quiz data');
+        }
+        const data = await response.json();
+        setQuizData(data);
+      } catch (err) {
+        console.error('Error fetching quiz:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load quiz');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizData();
   }, []);
 
-  const fetchQuestions = async () => {
-    try {
-      const response = await fetch('/api/questions');
-      if (!response.ok) throw new Error('Failed to fetch questions');
-      
-      const data = await response.json();
-      setQuestions(data.questions);
-    } catch (err) {
-      console.error('Error fetching questions:', err);
-      // Fallback to sample questions if fetch fails
-      setQuestions(sampleQuestions);
-      setError('Failed to load questions from server, using sample questions instead');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-    // Optional callback for tracking or analytics
-    const handleQuizComplete = async (answers: Record<string, string>, email: string) => {
-      // You can add any post-submission logic here that doesn't involve creating a lead
-      // For example: analytics tracking, showing a success message, etc.
-      console.log('Quiz completed:', { email, answers });
-    };
-  
-    if (error) {
-      console.warn(error);
-    }
+  if (error) {
+    console.warn(error);
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -118,12 +110,26 @@ export default function QuizPage() {
         <h1 className="text-3xl font-bold text-center mb-8">
           Find Your High-Yield Investment Path
         </h1>
-        {!loading && (
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center p-4 bg-red-50 rounded-lg text-red-800">
+            <p>{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-red-100 rounded hover:bg-red-200"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : quizData ? (
           <QuizContainer
-            questions={questions}
-            onComplete={handleQuizComplete}
+            quiz={quizData.quiz}
+            questions={quizData.questions}
           />
-        )}
+        ) : null}
       </div>
     </main>
   );

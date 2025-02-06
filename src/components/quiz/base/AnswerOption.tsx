@@ -1,7 +1,7 @@
 // src/components/quiz/AnswerOption.tsx
 import React from 'react';
 import { motion, MotionProps } from 'framer-motion';
-import { Question } from '@/types/quiz';
+import type { Question, QuestionOption } from '@/lib/quiz/types';
 
 // Define proper motion component types
 type MotionButtonProps = MotionProps & React.ComponentProps<'button'>;

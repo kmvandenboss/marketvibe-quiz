@@ -5,6 +5,7 @@ import Link from 'next/link';
 interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
   matchedOptionsCount: number;
+  emailCaptureMessage?: string;
 }
 
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
@@ -12,7 +13,11 @@ type MotionButtonProps = MotionProps & React.ComponentProps<'button'>;
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 const MotionButton = motion.button as React.FC<MotionButtonProps>;
 
-const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOptionsCount }) => {
+const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ 
+  onSubmit, 
+  matchedOptionsCount,
+  emailCaptureMessage 
+}) => {
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,7 +101,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ onSubmit, matchedOp
         {matchedOptionsCount === 1 ? 'idea' : 'ideas'} for you
       </h2>
       <p className="text-gray-600 mb-6">
-        Enter your email below to see your personalized investment ideas.
+        {emailCaptureMessage || 'Enter your email below to see your personalized investment ideas.'}
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-4">

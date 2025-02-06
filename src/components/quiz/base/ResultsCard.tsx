@@ -1,11 +1,12 @@
 // src/components/quiz/ResultsCard.tsx
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { InvestmentOption } from '@/types/quiz';
+import type { InvestmentOption } from '@/lib/quiz/types';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ResultsCardProps {
   leadId: string;
+  quizId: string;
   options: InvestmentOption[];
   isLoading?: boolean;
   error?: string;
@@ -22,6 +23,7 @@ const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 export const ResultsCard: React.FC<ResultsCardProps> = ({
   leadId,
+  quizId,
   options,
   isLoading = false,
   error
@@ -31,13 +33,13 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
   const [trackingError, setTrackingError] = useState<string | null>(null);
 
   const handleLinkClick = useCallback(async (link: string) => {
-    if (!leadId || !link) {
-      console.error('Missing required data:', { leadId, link });
+    if (!leadId || !link || !quizId) {
+      console.error('Missing required data:', { leadId, link, quizId });
       return;
     }
 
     if (clickedLinks.length >= 3 || clickedLinks.includes(link)) {
-      window.open(`/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
+      window.open(`/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
       return;
     }
 
@@ -50,7 +52,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ leadId, link }),
+        body: JSON.stringify({ leadId, link, quizId }),
       });
 
       const data = await response.json();
@@ -63,15 +65,15 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
         setClickedLinks(prev => [...prev, link]);
       }
 
-      window.open(`/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
+      window.open(`/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
     } catch (error) {
       console.error('Error tracking link click:', error);
       setTrackingError('Unable to track click, but opening link anyway');
-      window.open(`/api/redirect?leadId=${leadId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
+      window.open(`/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
     } finally {
       setIsTracking(false);
     }
-  }, [leadId, clickedLinks]);
+  }, [leadId, clickedLinks, quizId]);
 
   if (isLoading) {
     return (

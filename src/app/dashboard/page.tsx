@@ -1,6 +1,5 @@
-// /src/app/dashboard/page.tsx
-import { DashboardContent } from '@/components/dashboard/DashboardContent';
+import { QuizOverview } from '@/components/dashboard/QuizOverview';
 
 export default function DashboardPage() {
-  return <DashboardContent />;
+  return <QuizOverview />;
 }

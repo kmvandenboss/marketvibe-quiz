@@ -1,18 +1,21 @@
-// /src/app/api/investment-options/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getInvestmentOptions, logAnalyticsEvent } from '@/db/queries';
 import { findMatchingInvestments } from '@/utils/quiz-utils';
+import type { InvestmentOption } from '@/types/quiz';
 
 // Validate the score object structure
 const ScoreSchema = z.record(z.string(), z.number());
 
 const RequestSchema = z.object({
   score: ScoreSchema,
-  maxResults: z.number().min(1).max(10).optional().default(3)
+  maxResults: z.number().min(1).max(10).optional().default(3),
+  quizId: z.string()
 });
 
 export async function POST(request: NextRequest) {
+  let parsedBody: z.infer<typeof RequestSchema> | null = null;
+
   try {
     const body = await request.json();
     
@@ -24,17 +27,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { score, maxResults } = validationResult.data;
+    parsedBody = validationResult.data;
+    const { score, maxResults, quizId } = parsedBody;
 
-    // Fetch all investment options from database
-    const allOptions = await getInvestmentOptions();
+    // Fetch investment options for this quiz from database
+    const dbOptions = await getInvestmentOptions(quizId);
+
+    // Transform the database results to match InvestmentOption type
+    const transformedOptions: InvestmentOption[] = dbOptions.map(option => ({
+      id: option.id,
+      title: option.title,
+      description: option.description,
+      link: option.link,
+      tags: option.tags,
+      priority: option.priority,
+      logo_url: option.logoUrl,
+      company_name: option.companyName,
+      returns_text: option.returnsText,
+      minimum_investment_text: option.minimumInvestmentText,
+      investment_type: option.investmentType,
+      key_features: option.keyFeatures,
+      quiz_tags: option.quizTags as Record<string, unknown>
+    }));
 
     // Find matching investments using our utility function
-    const matchedOptions = findMatchingInvestments(score, allOptions, maxResults);
+    const matchedOptions = findMatchingInvestments(score, transformedOptions, maxResults);
 
     // Log analytics event for recommendations generation
     await logAnalyticsEvent({
       eventType: 'RECOMMENDATIONS_GENERATED',
+      quizId,
       data: {
         scoreCategories: Object.keys(score),
         recommendationCount: matchedOptions.length,
@@ -50,13 +72,18 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching investment options:', error);
     
-    // Log error event
-    await logAnalyticsEvent({
-      eventType: 'RECOMMENDATIONS_ERROR',
-      data: {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
-    });
+    try {
+      // Log error event
+      await logAnalyticsEvent({
+        eventType: 'RECOMMENDATIONS_ERROR',
+        quizId: parsedBody?.quizId ?? 'unknown',
+        data: {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
+    } catch (logError) {
+      console.error('Error logging analytics:', logError);
+    }
 
     return NextResponse.json(
       { error: 'Failed to fetch investment options' },

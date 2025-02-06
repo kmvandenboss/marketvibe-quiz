@@ -23,13 +23,13 @@ export interface InvestmentOption {
   link: string;
   tags: string[];
   priority: number;
-  // New fields
   logo_url: string;
   company_name: string;
   returns_text: string;
   minimum_investment_text: string;
   investment_type: string;
   key_features: string[];
+  quiz_tags: Record<string, unknown>;  // Remove optional and ensure it's Record type
 }
 
 export interface QuizState {
@@ -39,9 +39,29 @@ export interface QuizState {
   email?: string;
 }
 
+export interface PersonalityResult {
+  type: string;
+  title: string;
+  description: string;
+  characteristics: string[];
+  imageUrl?: string;
+}
+
+export interface QuizResultsConfig {
+  layout: 'standard' | 'personality';
+  personalityResults?: PersonalityResult[];
+}
+
+export interface PersonalityTypeResult {
+  personalityResult: PersonalityResult;
+  resultsConfig: QuizResultsConfig;
+}
+
 export interface QuizResponse {
   email: string;
   responses: Record<string, string>;
   score: Record<string, number>;
   clickedLinks: string[];
+  personalityType?: string;
+  resultsConfig?: QuizResultsConfig;
 }

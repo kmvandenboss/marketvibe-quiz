@@ -1,3 +1,4 @@
+// /src/app/api/dashboard/metrics/route.ts
 import { NextResponse } from 'next/server';
 import { getDashboardMetrics } from '@/db/queries';
 import { verifyAuth } from '@/lib/auth';
@@ -5,7 +6,6 @@ import { verifyAuth } from '@/lib/auth';
 export async function GET(request: Request) {
   try {
     const token = request.headers.get('Cookie')?.split('auth-token=')?.[1]?.split(';')?.[0];
-    
     if (!token) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -15,7 +15,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const metrics = await getDashboardMetrics();
+    const { searchParams } = new URL(request.url);
+    const quizId = searchParams.get('quizId');
+    
+    if (!quizId) {
+      return NextResponse.json({ message: 'Quiz ID is required' }, { status: 400 });
+    }
+
+    const metrics = await getDashboardMetrics(quizId);
     return NextResponse.json(metrics);
   } catch (error) {
     console.error('Error fetching metrics:', error);

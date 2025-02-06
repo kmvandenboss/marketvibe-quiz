@@ -5,8 +5,25 @@ interface ClickedLink {
   url: string;
 }
 
+export interface Quiz {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  active: boolean;
+}
+
+export interface QuizOverviewMetrics {
+  quizId: string;
+  quizTitle: string;
+  totalLeads: number;
+  completionRate: number;
+  lastSubmission: string | null;
+}
+
 export interface Lead {
   id: string;
+  quizId: string;
   email: string;
   name: string;
   isAccredited: boolean;
@@ -18,6 +35,7 @@ export interface Lead {
 
 export interface DashboardMetrics {
   // Existing metrics
+  quizId: string;
   totalLeads: number;
   accreditedLeads: number;
   conversionRate: number;

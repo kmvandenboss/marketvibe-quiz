@@ -1,47 +1,32 @@
-// src/components/quiz/QuizContainer.tsx
+// src/components/quiz/base/QuizContainer.tsx
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, MotionProps } from 'framer-motion';
-import { Question, InvestmentOption } from '@/types/quiz';
+import type { Quiz, Question, QuizState, SubmissionState } from '@/lib/quiz/types';
 import QuestionCard from './QuestionCard';
 import { ProgressIndicator } from './ProgressIndicator';
 import EmailCaptureForm from './EmailCaptureForm';
-import ResultsCard from './ResultsCard';
+import ResultsCardContainer from './ResultsCardContainer';
 import LoadingSpinner from './LoadingSpinner';
 import Button, { MotionButton } from '@/components/ui/button';
 import { calculateQuizScore } from '@/utils/quiz-utils';
-import { defaultQuizQuestions } from '@/lib/quiz-data';
 
 interface QuizContainerProps {
-  questions?: Question[];
-  onComplete?: (answers: Record<string, string>, email: string) => Promise<void>;
+  quiz: Quiz;
+  questions: Question[];
   onStart?: () => void;
-}
-
-interface QuizContainerState {
-  currentQuestionIndex: number;
-  answers: Record<string, string>;
-  isComplete: boolean;
-  isLastQuestionAnswered: boolean;
-  calculatedScore?: Record<string, number>; // Added to store score
-}
-
-interface SubmissionState {
-  isLoading: boolean;
-  error: string | null;
-  leadId: string | null;
-  investmentOptions: InvestmentOption[];
-  matchedOptionsCount: number;
 }
 
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 export const QuizContainer: React.FC<QuizContainerProps> = ({ 
-  questions = defaultQuizQuestions,
-  onComplete,
+  quiz,
+  questions,
   onStart
 }) => {
-  const [quizState, setQuizState] = useState<QuizContainerState>({
+  const [quizState, setQuizState] = useState<QuizState>({
     currentQuestionIndex: 0,
     answers: {},
     isComplete: false,
@@ -53,7 +38,9 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     error: null,
     leadId: null,
     investmentOptions: [],
-    matchedOptionsCount: 0
+    matchedOptionsCount: 0,
+    resultsConfig: undefined,
+    personalityResult: undefined
   });
 
   const handleAnswer = async (questionId: string, optionId: string) => {
@@ -69,7 +56,11 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventType: 'QUIZ_START',
-          questionIndex: 0
+          questionIndex: 0,
+          quizId: quiz.id,
+          data: {
+            quizSlug: quiz.slug
+          }
         })
       });
     }
@@ -82,13 +73,16 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         eventType: 'QUESTION_ANSWERED',
         questionId,
         questionIndex: quizState.currentQuestionIndex,
-        data: { answer: optionId }
+        quizId: quiz.id,
+        data: { 
+          answer: optionId,
+          quizSlug: quiz.slug
+        }
       })
     });
   
     const isLastQuestion = quizState.currentQuestionIndex === questions.length - 1;
     
-    // Update answers first
     setQuizState(prev => ({
       ...prev,
       answers: { ...prev.answers, [questionId]: optionId },
@@ -96,7 +90,6 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     }));
   
     if (!isLastQuestion) {
-      // Handle non-last questions with delay
       setTimeout(() => {
         setQuizState(prev => ({
           ...prev,
@@ -106,7 +99,6 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     }
   };
 
-  // Use useEffect to handle the last question calculations
   useEffect(() => {
     const calculateOptions = async () => {
       if (!quizState.isLastQuestionAnswered) return;
@@ -114,19 +106,20 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
       try {
         setSubmissionState(prev => ({ ...prev, isLoading: true }));
         
-        // Calculate score once and store it
         const calculatedScore = calculateQuizScore(questions, quizState.answers);
         
         const response = await fetch('/api/investment-options', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ score: calculatedScore }),
+          body: JSON.stringify({ 
+            score: calculatedScore,
+            quizId: quiz.id 
+          }),
         });
 
         if (!response.ok) throw new Error('Failed to fetch investment options');
         const { options } = await response.json();
 
-        // Store the calculated score in state
         setQuizState(prev => ({
           ...prev,
           calculatedScore,
@@ -140,6 +133,20 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           investmentOptions: options,
         }));
 
+        // Track recommendations generated
+        await fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventType: 'RECOMMENDATIONS_GENERATED',
+            quizId: quiz.id,
+            data: { 
+              matchedOptionsCount: options.length,
+              quizSlug: quiz.slug
+            }
+          })
+        });
+
       } catch (error) {
         console.error('Error calculating investment options:', error);
         setSubmissionState(prev => ({
@@ -147,20 +154,34 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           isLoading: false,
           error: error instanceof Error ? error.message : 'An unexpected error occurred',
         }));
+
+        // Track recommendation error
+        await fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventType: 'RECOMMENDATIONS_ERROR',
+            quizId: quiz.id,
+            data: { 
+              error: error instanceof Error ? error.message : 'Unknown error',
+              quizSlug: quiz.slug
+            }
+          })
+        });
       }
     };
 
     calculateOptions();
-  }, [quizState.isLastQuestionAnswered, questions]);
+  }, [quizState.isLastQuestionAnswered, questions, quiz.id, quiz.slug]);
 
   const handleBack = () => {
+    if (!quiz.navigationSettings?.allowBack) return;
+    
     setQuizState(prev => {
       if (prev.currentQuestionIndex <= 0) return prev;
       
       const prevIndex = prev.currentQuestionIndex - 1;
       const currentQuestionId = questions[prev.currentQuestionIndex].id;
-      
-      // Remove the current question's answer when going back
       const { [currentQuestionId]: removedAnswer, ...remainingAnswers } = prev.answers;
       
       return {
@@ -169,14 +190,13 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         answers: remainingAnswers,
         isComplete: false,
         isLastQuestionAnswered: false,
-        calculatedScore: undefined // Clear the calculated score when going back
+        calculatedScore: undefined
       };
     });
   };
 
   const handleEmailSubmit = async (email: string) => {
     if (!quizState.calculatedScore) {
-      // If somehow we don't have a score yet, calculate it now
       const score = calculateQuizScore(questions, quizState.answers);
       setQuizState(prev => ({
         ...prev,
@@ -185,13 +205,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     }
 
     setSubmissionState(prev => ({ ...prev, isLoading: true, error: null }));
-    
-    if (onComplete) {
-      await onComplete(quizState.answers, email);
-    }
 
     try {
-      // Ensure we're using the calculated score
       const score = quizState.calculatedScore || calculateQuizScore(questions, quizState.answers);
       
       const submitResponse = await fetch('/api/submit', {
@@ -202,7 +217,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         body: JSON.stringify({
           email,
           responses: quizState.answers,
-          score
+          score,
+          quizId: quiz.id
         }),
       });
 
@@ -210,13 +226,29 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         throw new Error('Failed to submit quiz response');
       }
 
-      const { leadId } = await submitResponse.json();
+      const { leadId, resultsConfig, personalityResult } = await submitResponse.json();
 
       setSubmissionState(prev => ({
         ...prev,
         isLoading: false,
         leadId,
+        resultsConfig,
+        personalityResult
       }));
+
+      // Track successful email submission
+      await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'EMAIL_SUBMITTED',
+          quizId: quiz.id,
+          data: { 
+            matchedOptionsCount: submissionState.matchedOptionsCount,
+            quizSlug: quiz.slug
+          }
+        })
+      });
 
     } catch (error) {
       console.error('Error in quiz submission:', error);
@@ -225,12 +257,26 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         isLoading: false,
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
       }));
+
+      // Track email submission error
+      await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'EMAIL_SUBMISSION_ERROR',
+          quizId: quiz.id,
+          data: { 
+            error: error instanceof Error ? error.message : 'Unknown error',
+            quizSlug: quiz.slug
+          }
+        })
+      });
     }
   };
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
-      {!quizState.isComplete && (
+      {!quizState.isComplete && quiz.navigationSettings?.showProgressBar && (
         <div className="mb-8">
           <ProgressIndicator 
             current={quizState.currentQuestionIndex} 
@@ -239,7 +285,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         </div>
       )}
 
-      {quizState.currentQuestionIndex === 0 && (
+      {quizState.currentQuestionIndex === 0 && quiz.navigationSettings?.showStartPrompt && (
         <MotionDiv
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -286,21 +332,28 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
               selectedOption={quizState.answers[questions[quizState.currentQuestionIndex].id]}
             />
           ) : submissionState.leadId ? (
-            <ResultsCard
+            <ResultsCardContainer
               leadId={submissionState.leadId}
-              options={submissionState.investmentOptions}
+              quizId={quiz.id}
+              investmentOptions={submissionState.investmentOptions}
+              resultsConfig={submissionState.resultsConfig}
+              personalityResult={submissionState.personalityResult}
+              isLoading={submissionState.isLoading}
               error={submissionState.error || undefined}
             />
           ) : (
             <EmailCaptureForm 
               onSubmit={handleEmailSubmit}
               matchedOptionsCount={submissionState.matchedOptionsCount}
+              emailCaptureMessage={quiz.emailCaptureMessage}
             />
           )}
         </MotionDiv>
       </AnimatePresence>
 
-      {!quizState.isComplete && quizState.currentQuestionIndex > 0 && (
+      {!quizState.isComplete && 
+       quizState.currentQuestionIndex > 0 && 
+       quiz.navigationSettings?.allowBack && (
         <MotionButton
           variant="back"
           onClick={handleBack}

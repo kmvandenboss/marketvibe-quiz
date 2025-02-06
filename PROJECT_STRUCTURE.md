@@ -9,8 +9,6 @@ This document provides an overview of the project structure and organization.
 - `drizzle.config.ts` - Drizzle ORM configuration
 - `eslint.config.mjs` - ESLint configuration
 - `global.d.ts` - Global TypeScript declarations
-- `hash-password.ts` - Password hashing utility script
-- `hashed-password.ts` - Generated hashed passwords
 - `next.config.js` - Next.js configuration
 - `package.json` - Project dependencies and scripts
 - `package-lock.json` - Locked dependency versions
@@ -31,9 +29,11 @@ Next.js 13+ app directory structure:
 - `globals.css` - Global styles
 - `/contact` - Contact page route
   - `page.tsx` - Contact page component
-- `/dashboard` - Admin Dashboard route
+- `/dashboard` - Admin Dashboard routes
   - `layout.tsx` - Dashboard layout component
-  - `page.tsx` - Dashboard page component
+  - `page.tsx` - Dashboard overview page
+  - `/[quizId]` - Quiz-specific dashboard
+    - `page.tsx` - Individual quiz dashboard
   - `/users` - User management route
     - `page.tsx` - Users page component
 - `/error` - Error handling route
@@ -44,8 +44,10 @@ Next.js 13+ app directory structure:
   - `page.tsx` - Login page component
 - `/privacy-policy` - Privacy Policy route
   - `page.tsx` - Privacy Policy page component
-- `/quiz` - Quiz page route
-  - `page.tsx` - Quiz page component
+- `/quiz` - Quiz routes
+  - `page.tsx` - Quiz landing page
+  - `/[slug]` - Dynamic quiz routes
+    - `page.tsx` - Dynamic quiz page component
 
 ### API Routes (`/src/app/api`)
 - `/analytics` - Analytics tracking endpoints
@@ -57,19 +59,24 @@ Next.js 13+ app directory structure:
   - `/logout` - Logout endpoint
     - `route.ts` - API route handler
 - `/dashboard` - Dashboard data endpoints
+  - `/overview` - Dashboard overview data
+    - `route.ts` - Overview data handler
+  - `/metrics` - Dashboard metrics
+    - `route.ts` - Metrics data handler
   - `/leads` - Leads data endpoint
-    - `route.ts` - API route handler
-  - `/metrics` - Metrics data endpoint
     - `route.ts` - API route handler
 - `/investment-options` - Investment options API endpoint
   - `route.ts` - API route handler
 - `/meta-conversion` - Meta Pixel conversion tracking endpoint
   - `route.ts` - API route handler
-- `/questions` - Quiz questions API endpoint
+- `/questions` - Questions management endpoint
   - `route.ts` - API route handler
+- `/quiz` - Quiz API endpoints
+  - `[slug]` - Dynamic quiz routes
+    - `route.ts` - Quiz data API handler
+    - `/submit` - Quiz submission endpoint
+      - `route.ts` - Submission handler
 - `/redirect` - URL redirection endpoint
-  - `route.ts` - API route handler
-- `/submit` - Quiz submission endpoint
   - `route.ts` - API route handler
 - `/track-click` - Click tracking endpoint
   - `route.ts` - API route handler
@@ -83,15 +90,22 @@ Next.js 13+ app directory structure:
   - `DashboardContent.tsx` - Main dashboard content wrapper
   - `DashboardMetrics.tsx` - Dashboard metrics display
   - `DashboardNav.tsx` - Dashboard navigation component
-  - `LeadsTable.tsx` - Table for displaying leads
+  - `LeadsTable.tsx` - Leads data table component
+  - `QuizSelector.tsx` - Quiz selection component
+  - `QuizOverview.tsx` - Quiz overview display
 - `/quiz` - Quiz-specific components
-  - `AnswerOption.tsx` - Individual answer option component
-  - `EmailCaptureForm.tsx` - Email collection form
-  - `LoadingSpinner.tsx` - Loading indicator
-  - `ProgressIndicator.tsx` - Quiz progress bar
-  - `QuestionCard.tsx` - Question display component
-  - `QuizContainer.tsx` - Main quiz container
-  - `ResultsCard.tsx` - Quiz results display
+  - `/base` - Core quiz components
+    - `QuizContainer.tsx` - Main quiz container component
+    - `EmailCaptureForm.tsx` - Email collection form
+    - `QuestionCard.tsx` - Question display component
+    - `ResultsCard.tsx` - Quiz results display
+    - `ResultsCardContainer.tsx` - Container for results display
+    - `PersonalityResultsCard.tsx` - Personality quiz results display
+    - `AnswerOption.tsx` - Individual answer option component
+    - `LoadingSpinner.tsx` - Loading indicator
+    - `ProgressIndicator.tsx` - Quiz progress bar
+  - `/Layouts` - Quiz layout components
+    - `StandardLayout.tsx` - Standard quiz layout component
 - `/ui` - Shared UI components
   - `button.tsx` - Reusable button component
   - `card.tsx` - Card component
@@ -117,9 +131,11 @@ Next.js 13+ app directory structure:
 - `auth.ts` - Authentication utilities and middleware
 - `db.ts` - Database utility functions
 - `quiz-data.ts` - Quiz data and configuration
+- `/quiz` - Quiz-specific utilities
+  - `types.ts` - Quiz-specific type definitions
 
 ### Types (`/src/types`)
-- `quiz.ts` - Quiz-related TypeScript types
+- `quiz.ts` - Shared quiz type definitions
 - `dashboard.ts` - Dashboard-related TypeScript types
 
 ### Utils (`/src/utils`)
@@ -137,6 +153,8 @@ Static files served directly:
   - `globalx.jpg` - GlobalX investment image
   - `groundfloor.jpg` - Groundfloor investment image
   - `ishares.jpg` - iShares investment image
+  - `nada.jpg` - NADA investment image
+  - `vti.png` - VTI investment image
 - `file.svg` - File icon
 - `globe.svg` - Globe icon
 - `next.svg` - Next.js logo

@@ -1,7 +1,7 @@
 // src/components/quiz/QuestionCard.tsx
 import React from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
-import { Question } from '@/types/quiz';
+import type { Question } from '@/lib/quiz/types';
 import AnswerOption from './AnswerOption';
 
 interface QuestionCardProps {

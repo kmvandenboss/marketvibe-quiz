@@ -1,4 +1,4 @@
-import { Question, InvestmentOption } from '@/types/quiz';
+import { Question, InvestmentOption, PersonalityResult, PersonalityTypeResult } from '@/types/quiz';
 
 interface TagScores {
   [key: string]: number;
@@ -52,13 +52,16 @@ export const findMatchingInvestments = (
 ): InvestmentOption[] => {
   return options
     .map(option => {
+      // Get quiz-specific tags from quizTags if available
+      const quizTags = Object.values(option.quiz_tags || {})[0] as string[] || option.tags;
+      
       // Calculate match score based on matching tags
-      let matchScore = option.tags.reduce((score, tag) => {
+      let matchScore = quizTags.reduce((score, tag) => {
         return score + (scores[tag] || 0);
       }, 0);
 
       // Normalize by number of tags to not unfairly favor options with more tags
-      matchScore = matchScore / option.tags.length;
+      matchScore = matchScore / quizTags.length;
 
       return {
         ...option,
@@ -80,4 +83,35 @@ export const getQuizProgress = (
   totalQuestions: number
 ): number => {
   return Math.round((currentQuestionIndex / totalQuestions) * 100);
+};
+
+export const determinePersonalityType = (
+  scores: TagScores,
+  personalityResults: PersonalityResult[]
+): PersonalityTypeResult | undefined => {
+  // Get available personality types
+  const availableTypes = personalityResults.map(result => result.type);
+  
+  // Find the highest scoring tag among available personality types only
+  const highestScoringTag = Object.entries(scores).reduce(
+    (highest, [tag, score]) => {
+      // Only consider tags that are valid personality types
+      if (availableTypes.includes(tag) && score > highest.score) {
+        return { tag, score };
+      }
+      return highest;
+    },
+    { tag: '', score: -1 }
+  );
+
+  // Find the personality result that matches the highest scoring tag
+  const matchedPersonality = personalityResults.find(result => result.type === highestScoringTag.tag);
+  
+  return matchedPersonality ? {
+    personalityResult: matchedPersonality,
+    resultsConfig: {
+      layout: 'personality',
+      personalityResults
+    }
+  } : undefined;
 };

@@ -4,7 +4,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence, MotionProps } from 'framer-motion';
-import QuizContainer from '@/components/quiz/QuizContainer';
+import QuizContainer from '@/components/quiz/base/QuizContainer';
+import type { Quiz } from '@/lib/quiz/types';
+import { defaultQuizQuestions } from '@/lib/quiz-data';
 import Footer from '@/components/Footer';
 import { Clock, DollarSign, Shield, CheckCircle, ChevronRight } from 'lucide-react';
 
@@ -13,6 +15,27 @@ const MotionDiv = motion.div as React.FC<MotionDivProps>;
 
 export default function HighYieldQuizPage() {
   const [quizStarted, setQuizStarted] = useState(false);
+
+  const quiz: Quiz = {
+    id: 'high-yield-quiz',
+    slug: 'high-yield-quiz',
+    title: 'High-Yield Investment Quiz',
+    description: 'Discover your perfect high-yield investment strategy',
+    emailCaptureMessage: 'Get your personalized high-yield investment recommendations',
+    results_layout: 'standard',
+    active: true,
+    navigationSettings: {
+      allowBack: true,
+      showProgressBar: true,
+      showQuestionCount: true,
+      showStartPrompt: true
+    },
+    seoMetadata: {
+      title: 'High-Yield Investment Quiz | Find Your Perfect Investment Strategy',
+      description: 'Take our 60-second quiz to discover high-yield investment opportunities tailored to your goals and risk tolerance.',
+      keywords: ['high-yield investments', 'investment quiz', 'investment strategy']
+    }
+  };
 
   const handleQuizStart = () => {
     setQuizStarted(true);
@@ -63,7 +86,11 @@ export default function HighYieldQuizPage() {
               )}
             </AnimatePresence>
 
-            <QuizContainer onStart={handleQuizStart} />
+            <QuizContainer 
+              quiz={quiz}
+              questions={defaultQuizQuestions}
+              onStart={handleQuizStart}
+            />
 
             {!quizStarted && (
               <p className="text-center text-gray-600 mt-3 md:mt-4">
