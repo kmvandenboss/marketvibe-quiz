@@ -31,13 +31,14 @@ export async function GET(request: NextRequest) {
     // Log the event
     await logAnalyticsEvent({
       eventType: 'EXTERNAL_REDIRECT',
+      quizId: 'system',  // Using 'system' as this is a system-level event
       leadId,
       data: {
         link,
         destination: encodedUrl,
         timestamp: new Date().toISOString(),
-        userAgent: request.headers.get('user-agent') || undefined,
-        referer: request.headers.get('referer') || undefined
+        userAgent: request.headers.get('user-agent') || null,
+        referer: request.headers.get('referer') || null
       }
     });
 
