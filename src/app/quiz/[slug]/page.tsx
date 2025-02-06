@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence, MotionProps } from 'framer-motion';
 import QuizContainer from '@/components/quiz/base/QuizContainer';
 import Footer from '@/components/Footer';
@@ -64,14 +65,16 @@ export default function DynamicQuizPage() {
           {/* Logo and stats section */}
             <div className="flex justify-between items-center mb-4 md:mb-8">
               <div className={quizStarted ? "w-[15%]" : "w-[20%]"}>
-                <Image
-                  src="/images/MarketVibe-logo.png"
-                  alt="MarketVibe Logo"
-                  width={748}
-                  height={368}
-                  className="w-full h-auto"
-                  priority
-                />
+                <Link href="/">
+                  <Image
+                    src="/images/MarketVibe-logo.png"
+                    alt="MarketVibe Logo"
+                    width={748}
+                    height={368}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </Link>
               </div>
               <div className="text-gray-600 text-sm md:text-base">
               27,492 investors helped

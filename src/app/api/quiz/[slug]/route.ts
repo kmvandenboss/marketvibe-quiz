@@ -22,6 +22,7 @@ async function getQuizBySlug(slug: string) {
       slug: quiz.slug,
       title: quiz.title,
       description: quiz.description || undefined,
+      heading_text: quiz.heading_text,
       emailCaptureMessage: quiz.emailCaptureMessage,
       results_layout: quiz.results_layout as 'standard' | 'personality',
       personalityResults: quiz.results_layout === 'personality' 

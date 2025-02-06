@@ -43,30 +43,14 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     personalityResult: undefined
   });
 
-  const handleAnswer = async (questionId: string, optionId: string) => {
-    // If this is the first answer, trigger onStart and track quiz start
-    if (Object.keys(quizState.answers).length === 0) {
-      if (onStart) {
-        onStart();
-      }
-      
-      // Log quiz start
-      await fetch('/api/analytics/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventType: 'QUIZ_START',
-          questionIndex: 0,
-          quizId: quiz.id,
-          data: {
-            quizSlug: quiz.slug
-          }
-        })
-      });
+  const handleAnswer = (questionId: string, optionId: string) => {
+    // If this is the first answer, trigger onStart
+    if (Object.keys(quizState.answers).length === 0 && onStart) {
+      onStart();
     }
   
-    // Track question answer
-    await fetch('/api/analytics/track', {
+    // Track analytics in the background without blocking
+    fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -79,7 +63,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           quizSlug: quiz.slug
         }
       })
-    });
+    }).catch(console.error); // Handle any errors silently
   
     const isLastQuestion = quizState.currentQuestionIndex === questions.length - 1;
     
@@ -98,6 +82,24 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
       }, 400);
     }
   };
+
+  // Track quiz start separately when first answer is selected
+  useEffect(() => {
+    if (Object.keys(quizState.answers).length === 1) {
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'QUIZ_START',
+          questionIndex: 0,
+          quizId: quiz.id,
+          data: {
+            quizSlug: quiz.slug
+          }
+        })
+      }).catch(console.error);
+    }
+  }, [quizState.answers, quiz.id, quiz.slug]);
 
   useEffect(() => {
     const calculateOptions = async () => {
@@ -346,6 +348,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
               onSubmit={handleEmailSubmit}
               matchedOptionsCount={submissionState.matchedOptionsCount}
               emailCaptureMessage={quiz.emailCaptureMessage}
+              heading_text={quiz.heading_text}
             />
           )}
         </MotionDiv>

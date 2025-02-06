@@ -21,6 +21,7 @@ export async function getQuizById(quizId: string) {
       slug: quiz[0].slug,
       title: quiz[0].title,
       description: quiz[0].description,
+      heading_text: quiz[0].heading_text,
       results_layout: quiz[0].results_layout,
       personality_results: quiz[0].personality_results ? JSON.parse(JSON.stringify(quiz[0].personality_results)) : undefined
     };

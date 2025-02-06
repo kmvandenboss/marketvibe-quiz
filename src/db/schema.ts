@@ -6,6 +6,7 @@ export const quizzes = pgTable("quizzes", {
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   description: text("description"),
+  heading_text: text("heading_text").notNull().default("high-yield investment"),
   emailCaptureMessage: text("email_capture_message").notNull(),
   results_layout: text("results_layout").notNull().default('standard'),
   personality_results: jsonb("personality_results"),

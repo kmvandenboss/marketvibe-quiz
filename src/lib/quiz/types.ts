@@ -13,6 +13,7 @@ export interface Quiz {
     slug: string;
     title: string;
     description?: string;
+    heading_text: string;
     emailCaptureMessage: string;
     results_layout: 'standard' | 'personality';
     personalityResults?: PersonalityResult[];
@@ -78,6 +79,7 @@ export const QuizSchema = z.object({
   slug: z.string(),
   title: z.string(),
   description: z.string().optional(),
+  heading_text: z.string(),
   emailCaptureMessage: z.string(),
   results_layout: z.enum(['standard', 'personality']),
   personalityResults: z.array(z.object({

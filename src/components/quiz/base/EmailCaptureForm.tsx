@@ -6,6 +6,7 @@ interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
   matchedOptionsCount: number;
   emailCaptureMessage?: string;
+  heading_text: string;
 }
 
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
@@ -16,7 +17,8 @@ const MotionButton = motion.button as React.FC<MotionButtonProps>;
 const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({ 
   onSubmit, 
   matchedOptionsCount,
-  emailCaptureMessage 
+  emailCaptureMessage,
+  heading_text
 }) => {
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(true);
@@ -83,7 +85,8 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
   };
 
   return (
-    <MotionDiv
+    <div>
+      <MotionDiv
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       style={{
@@ -96,7 +99,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
         Based on your answers, we have{' '}
         <span className="text-blue-600 font-bold">
-          {matchedOptionsCount} high-yield investment
+          {matchedOptionsCount} {heading_text}
         </span>{' '}
         {matchedOptionsCount === 1 ? 'idea' : 'ideas'} for you
       </h2>
@@ -120,7 +123,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
               setEmail(e.target.value);
               setIsValid(true);
             }}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-blue-50/50 ${
               !isValid ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="your@email.com"
@@ -149,7 +152,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
           disabled={isSubmitting}
           style={{
             width: '100%',
-            backgroundColor: '#2563EB',
+            backgroundColor: '#2E7D32',
             color: 'white',
             padding: '0.75rem 1.5rem',
             borderRadius: '0.5rem',
@@ -158,7 +161,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
             opacity: isSubmitting ? 0.7 : 1,
           }}
         >
-          {isSubmitting ? 'Processing...' : 'Show My Results'}
+          {isSubmitting ? 'Processing...' : 'Get My Results Now'}
         </MotionButton>
       </form>
       
@@ -169,7 +172,9 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
           privacy policy
         </Link>.
       </p>
-    </MotionDiv>
+      </MotionDiv>
+      <div className="h-48 md:h-64" /> {/* Spacer to push footer below fold */}
+    </div>
   );
 };
 
