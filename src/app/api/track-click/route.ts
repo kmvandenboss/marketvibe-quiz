@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { trackLinkClick, logAnalyticsEvent } from '@/db/queries';
+import { db } from '@/db';
+import { leads } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 const TrackClickSchema = z.object({
   leadId: z.string().uuid(),
@@ -16,6 +19,7 @@ export async function POST(request: NextRequest) {
     if (!validationResult.success) {
       await logAnalyticsEvent({
         eventType: 'LINK_CLICK_VALIDATION_ERROR',
+        quizId: '', // Empty string as this is a validation error without context
         data: {
           errors: validationResult.error.issues,
           rawBody: body
@@ -34,8 +38,21 @@ export async function POST(request: NextRequest) {
     const wasTracked = await trackLinkClick({ leadId, link });
 
     // Log the event with full context
+    // Get the lead to find the associated quizId
+    const lead = await db().select({
+      quizId: leads.quizId
+    })
+    .from(leads)
+    .where(eq(leads.id, leadId))
+    .limit(1);
+
+    if (!lead.length) {
+      throw new Error(`Lead not found with ID: ${leadId}`);
+    }
+
     await logAnalyticsEvent({
       eventType: 'LINK_CLICK',
+      quizId: lead[0].quizId || '',
       leadId,
       data: {
         link,
@@ -61,6 +78,7 @@ export async function POST(request: NextRequest) {
 
     await logAnalyticsEvent({
       eventType: 'LINK_CLICK_ERROR',
+      quizId: '', // Empty string as this is an error without context
       data: errorDetails
     });
 
