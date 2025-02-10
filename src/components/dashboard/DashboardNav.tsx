@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import type { Quiz } from '@/types/dashboard';
+import type { Quiz, QuizOverviewMetrics } from '@/types/dashboard';
 
 export function DashboardNav() {
   const router = useRouter();
@@ -14,10 +14,20 @@ export function DashboardNav() {
   useEffect(() => {
     async function fetchQuizzes() {
       try {
-        const response = await fetch('/api/quizzes');
+        const response = await fetch('/api/dashboard/overview');
         if (!response.ok) throw new Error('Failed to fetch quizzes');
-        const data = await response.json();
-        setQuizzes(data);
+        const overviewData: QuizOverviewMetrics[] = await response.json();
+        
+        // Transform overview data to Quiz format with all required properties
+        const quizData: Quiz[] = overviewData.map(item => ({
+          id: item.quizId,
+          title: item.quizTitle,
+          slug: `quiz-${item.quizId}`, // Generate a slug if not provided
+          active: true, // This is always true for displayed quizzes
+          description: undefined // Optional property
+        }));
+        
+        setQuizzes(quizData);
       } catch (error) {
         console.error('Error fetching quizzes:', error);
       }

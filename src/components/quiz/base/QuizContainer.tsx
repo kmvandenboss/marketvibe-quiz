@@ -211,6 +211,19 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
     try {
       const score = quizState.calculatedScore || calculateQuizScore(questions, quizState.answers);
       
+      // Check responses for accreditation status
+      const isAccredited = Object.entries(quizState.answers).some(([questionId, answerId]) => {
+        const question = questions.find(q => q.id === questionId);
+        if (!question) return false;
+        
+        // Look for questions about accreditation
+        if (question.text.toLowerCase().includes('accredited')) {
+          const selectedOption = question.options.find(opt => opt.id === answerId);
+          return selectedOption?.text.toLowerCase().includes('yes');
+        }
+        return false;
+      });
+
       const submitResponse = await fetch('/api/submit', {
         method: 'POST',
         headers: {
@@ -220,7 +233,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           email,
           responses: quizState.answers,
           score,
-          quizId: quiz.id
+          quizId: quiz.id,
+          isAccredited
         }),
       });
 

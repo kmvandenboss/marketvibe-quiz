@@ -16,31 +16,59 @@ export const calculateQuizScore = (
   answers: Record<string, string>
 ): TagScores => {
   const scores: TagScores = {};
+  
+  console.log('\n=== Quiz Score Calculation Start ===');
+  console.log('Answers received:', answers);
 
   // Process each answered question
   Object.entries(answers).forEach(([questionId, answerId]) => {
+    console.log(`\nProcessing Question ID: ${questionId}`);
+    
     const question = questions.find(q => q.id === questionId);
-    if (!question) return;
+    if (!question) {
+      console.log(`Warning: Question ${questionId} not found in questions array`);
+      return;
+    }
 
     const selectedOption = question.options.find(opt => opt.id === answerId) as QuestionOption;
-    if (!selectedOption) return;
+    if (!selectedOption) {
+      console.log(`Warning: Answer ${answerId} not found in question options`);
+      return;
+    }
+
+    console.log('Selected option:', {
+      text: selectedOption.text,
+      weight: selectedOption.weight,
+      tags: selectedOption.tags
+    });
 
     // Add up scores for each tag, weighted by the option's weight
     selectedOption.tags.forEach(tag => {
       if (!scores[tag]) {
         scores[tag] = 0;
       }
+      const previousScore = scores[tag];
       scores[tag] += selectedOption.weight;
+      console.log(`Tag "${tag}": ${previousScore} + ${selectedOption.weight} = ${scores[tag]}`);
     });
   });
 
+  console.log('\nPre-normalized scores:', { ...scores });
+
   // Normalize scores to percentages
   const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+  console.log('Total score before normalization:', totalScore);
+  
   if (totalScore > 0) {
     Object.keys(scores).forEach(tag => {
+      const originalScore = scores[tag];
       scores[tag] = (scores[tag] / totalScore) * 100;
+      console.log(`Normalizing "${tag}": ${originalScore} → ${scores[tag].toFixed(2)}%`);
     });
   }
+
+  console.log('\nFinal normalized scores:', scores);
+  console.log('=== Quiz Score Calculation End ===\n');
 
   return scores;
 };
@@ -50,18 +78,29 @@ export const findMatchingInvestments = (
   options: InvestmentOption[],
   maxResults: number = 3
 ): InvestmentOption[] => {
+  console.log('\n=== Investment Matching Start ===');
+  console.log('Input scores:', scores);
+  console.log('Available options:', options.length);
+  
   return options
     .map(option => {
+      console.log(`\nEvaluating option: ${option.title}`);
+      
       // Get quiz-specific tags from quizTags if available
       const quizTags = Object.values(option.quiz_tags || {})[0] as string[] || option.tags;
+      console.log('Option tags:', quizTags);
       
       // Calculate match score based on matching tags
       let matchScore = quizTags.reduce((score, tag) => {
-        return score + (scores[tag] || 0);
+        const tagScore = scores[tag] || 0;
+        console.log(`Tag "${tag}" score: ${tagScore}`);
+        return score + tagScore;
       }, 0);
 
       // Normalize by number of tags to not unfairly favor options with more tags
+      const rawScore = matchScore;
       matchScore = matchScore / quizTags.length;
+      console.log(`Raw score: ${rawScore}, Normalized by ${quizTags.length} tags = ${matchScore.toFixed(2)}`);
 
       return {
         ...option,
@@ -75,7 +114,13 @@ export const findMatchingInvestments = (
       }
       return b.matchScore - a.matchScore;
     })
-    .slice(0, maxResults);
+    .slice(0, maxResults)
+    .map(option => {
+      console.log(`\nSelected match: ${option.title}`);
+      console.log(`Final match score: ${option.matchScore.toFixed(2)}`);
+      console.log(`Priority: ${option.priority}`);
+      return option;
+    });
 };
 
 export const getQuizProgress = (

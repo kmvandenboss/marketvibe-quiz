@@ -28,19 +28,24 @@ export async function GET(request: NextRequest) {
     // Track the click
     await trackLinkClick({ leadId, link });
     
-    // Log the event
-    await logAnalyticsEvent({
-      eventType: 'EXTERNAL_REDIRECT',
-      quizId: 'system',  // Using 'system' as this is a system-level event
-      leadId,
-      data: {
-        link,
-        destination: encodedUrl,
-        timestamp: new Date().toISOString(),
-        userAgent: request.headers.get('user-agent') || null,
-        referer: request.headers.get('referer') || null
-      }
-    });
+    // Get quizId from query params
+    const quizId = searchParams.get('quizId');
+    
+    // Only log analytics if we have a valid quizId
+    if (quizId) {
+      await logAnalyticsEvent({
+        eventType: 'EXTERNAL_REDIRECT',
+        quizId,
+        leadId,
+        data: {
+          link,
+          destination: encodedUrl,
+          timestamp: new Date().toISOString(),
+          userAgent: request.headers.get('user-agent') || null,
+          referer: request.headers.get('referer') || null
+        }
+      });
+    }
 
     // Decode and redirect to external URL
     const decodedUrl = decodeURIComponent(encodedUrl);
