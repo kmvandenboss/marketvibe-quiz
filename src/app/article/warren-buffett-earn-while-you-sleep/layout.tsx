@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "Learn how to build passive income streams and make your money work for you 24/7 with high-yield investment strategies used by the wealthy.",
     images: [
       {
-        url: '/images/buffett-dividends.png',
+        url: 'https://marketvibe.app/images/buffett-dividends.png',
         width: 746,
         height: 412,
         alt: 'Warren Buffett passive income strategies',
