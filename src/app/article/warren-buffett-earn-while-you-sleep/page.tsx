@@ -69,7 +69,23 @@ export default function WarrenBuffettArticle() {
                 Warren Buffett famously said, <strong>"If you don't find a way to make money while you sleep, you will work until you die."</strong>
               </p><br/>
 
-              <p>Let that sink in for a second.</p><br/>
+              <p>Let that sink in for a second.</p>
+
+                {/* New CTA Box */}
+                <div className="my-8 bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-[rgb(50,205,50)] rounded-lg p-6 shadow-sm">
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Want to find out how to make your money work for you 24/7?
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Take this 60-second quiz to get personalized high-yield investment ideas that can help you build passive income.
+                </p>
+                <button
+                  onClick={scrollToQuiz}
+                  className="bg-[rgb(50,205,50)] text-white px-6 py-3 rounded-lg font-semibold flex items-center hover:bg-[rgb(45,185,45)] transition-colors"
+                >
+                  Take the Quiz <ArrowDown className="ml-2 w-4 h-4" />
+                </button>
+              </div>
 
               <p>
                 It's not just a catchy quote—it’s a warning. If your money isn't working for you 24/7, 
@@ -118,7 +134,7 @@ export default function WarrenBuffettArticle() {
                 working for you. Even while you sleep.
               </p>
 
-              <h2 className="text-2xl font-bold mt-8 mb-4">Here's How You Start---In 60 Seconds</h2>
+              <h2 className="text-2xl font-bold mt-8 mb-4">Here's How You Start—In 60 Seconds</h2>
 
               <p>We've built a tool that takes the guesswork out of it.</p><br/>
 
