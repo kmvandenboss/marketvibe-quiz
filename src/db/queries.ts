@@ -333,7 +333,10 @@ export async function getDashboardMetrics(quizId: string) {
         }
       });
 
-    const emailSubmissions = analyticsData.filter(event => event.eventType === 'QUIZ_SUBMISSION').length;
+    // Count both old and new email submission event types
+    const emailSubmissions = analyticsData.filter(event => 
+      ['EMAIL_SUBMISSION', 'EMAIL_SUBMITTED'].includes(event.eventType)
+    ).length;
 
     return {
       totalLeads,

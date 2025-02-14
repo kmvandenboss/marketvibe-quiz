@@ -65,7 +65,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventType: 'EMAIL_SUBMISSION',
+          eventType: 'QUIZ_SUBMISSION',
           data: { matchedOptionsCount }
         })
       });

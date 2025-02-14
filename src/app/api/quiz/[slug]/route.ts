@@ -1,7 +1,7 @@
 // src/app/api/quiz/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { quizzes, questions as questionsTable, question_options } from '@/db/schema';
+import { quizzes, questions as questionsTable, question_options, investmentOptions } from '@/db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { QuizSchema, Quiz } from '@/lib/quiz/types';
 
@@ -123,12 +123,48 @@ export async function GET(
     // Validate transformed quiz data
     const validatedQuiz = QuizSchema.parse(quiz);
 
-    // Then get the questions
+    // Get the questions
     const questions = await getQuizQuestions(quiz.id);
+
+    // Get investment options with camelCase property names to match InvestmentOption type
+    const investments = await db()
+      .select({
+        id: investmentOptions.id,
+        title: investmentOptions.title,
+        description: investmentOptions.description,
+        link: investmentOptions.link,
+        tags: investmentOptions.tags,
+        priority: investmentOptions.priority,
+        logo_url: investmentOptions.logoUrl,
+        company_name: investmentOptions.companyName,
+        returns_text: investmentOptions.returnsText,
+        minimum_investment_text: investmentOptions.minimumInvestmentText,
+        investment_type: investmentOptions.investmentType,
+        key_features: investmentOptions.keyFeatures,
+        quiz_tags: investmentOptions.quizTags
+      })
+      .from(investmentOptions)
+      .orderBy(investmentOptions.priority)
+      .then(investments => investments.map(investment => ({
+        id: investment.id,
+        title: investment.title,
+        description: investment.description,
+        link: investment.link,
+        tags: investment.tags,
+        priority: investment.priority,
+        logoUrl: investment.logo_url,
+        companyName: investment.company_name,
+        returnsText: investment.returns_text,
+        minimumInvestmentText: investment.minimum_investment_text,
+        investmentType: investment.investment_type,
+        keyFeatures: investment.key_features,
+        quizTags: investment.quiz_tags
+      })));
 
     return NextResponse.json({
       quiz: validatedQuiz,
-      questions
+      questions,
+      investmentOptions: investments
     });
   } catch (error) {
     console.error('Error in quiz route:', error);

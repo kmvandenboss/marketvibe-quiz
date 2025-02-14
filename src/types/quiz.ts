@@ -23,13 +23,13 @@ export interface InvestmentOption {
   link: string;
   tags: string[];
   priority: number;
-  logo_url: string;
-  company_name: string;
-  returns_text: string;
-  minimum_investment_text: string;
-  investment_type: string;
-  key_features: string[];
-  quiz_tags: Record<string, unknown>;  // Remove optional and ensure it's Record type
+  logoUrl: string;
+  companyName: string;
+  returnsText: string;
+  minimumInvestmentText: string;
+  investmentType: string;
+  keyFeatures: string[];
+  quizTags: Record<string, unknown>;
 }
 
 export interface QuizState {

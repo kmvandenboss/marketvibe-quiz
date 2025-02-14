@@ -87,7 +87,7 @@ export const findMatchingInvestments = (
       console.log(`\nEvaluating option: ${option.title}`);
       
       // Get quiz-specific tags from quizTags if available
-      const quizTags = Object.values(option.quiz_tags || {})[0] as string[] || option.tags;
+      const quizTags = Object.values(option.quizTags || {})[0] as string[] || option.tags;
       console.log('Option tags:', quizTags);
       
       // Calculate match score based on matching tags
@@ -119,7 +119,9 @@ export const findMatchingInvestments = (
       console.log(`\nSelected match: ${option.title}`);
       console.log(`Final match score: ${option.matchScore.toFixed(2)}`);
       console.log(`Priority: ${option.priority}`);
-      return option;
+      // Remove matchScore property before returning
+      const { matchScore, ...cleanOption } = option;
+      return cleanOption;
     });
 };
 

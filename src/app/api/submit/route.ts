@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { submitQuizResponse } from '@/db/queries';
-import { determinePersonalityType } from '@/utils/quiz-utils';
+import { determinePersonalityType, calculateQuizScore, findMatchingInvestments } from '@/utils/quiz-utils';
+import { sendQuizResults } from '@/utils/email';
+import { InvestmentOption } from '@/types/quiz';
 import { z } from 'zod';
 import { db } from '@/db';
 import { quizzes } from '@/db/schema';
@@ -47,17 +49,28 @@ export async function POST(request: NextRequest) {
     if (!quizResponse.ok) {
       throw new Error('Failed to fetch quiz data');
     }
-    const { quiz: quizData } = await quizResponse.json();
+    const { quiz: quizData, questions, investmentOptions } = await quizResponse.json();
     
-    // Calculate personality type
-    const personalityResult = determinePersonalityType(
-      validatedData.score,
-      quizData.personalityResults || []
-    );
+    // Calculate scores from responses
+    const scores = calculateQuizScore(questions, validatedData.responses);
+    
+    // Get matched investments using the sophisticated matching algorithm
+    const matchedInvestments = findMatchingInvestments(scores, investmentOptions, 5);
+
+    // Send email with matched investments
+    const emailResult = await sendQuizResults(validatedData.email, {
+      matchedInvestments,
+      quizId: validatedData.quizId
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send results email:', emailResult.error);
+    }
 
     return NextResponse.json({
       leadId,
-      ...personalityResult
+      matchedInvestments,
+      emailSent: emailResult.success
     }, { status: 200 });
   } catch (error) {
     console.error('Error in submit API:', error);
