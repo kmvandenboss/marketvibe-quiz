@@ -101,11 +101,11 @@ const PersonalityResultsCard: React.FC<PersonalityResultsCardProps> = ({
               className="bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors"
             >
               <div className="flex items-start space-x-4 mb-4">
-                {option.logo_url && (
+                {option.logoUrl && (
                   <div className="w-16 h-16 flex-shrink-0">
                     <img
-                      src={option.logo_url}
-                      alt={`${option.company_name} logo`}
+                      src={option.logoUrl}
+                      alt={`${option.companyName} logo`}
                       className="w-full h-full object-contain rounded-lg"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
@@ -118,26 +118,26 @@ const PersonalityResultsCard: React.FC<PersonalityResultsCardProps> = ({
                   <h4 className="text-xl font-semibold text-gray-800">
                     {option.title}
                   </h4>
-                  {option.company_name && (
-                    <p className="text-gray-600">{option.company_name}</p>
+                  {option.companyName && (
+                    <p className="text-gray-600">{option.companyName}</p>
                   )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {option.returns_text && (
+                {option.returnsText && (
                   <div className="bg-white p-3 rounded-lg shadow-sm">
                     <p className="text-sm text-gray-600">Returns</p>
                     <p className="text-lg font-semibold text-gray-800">
-                      {option.returns_text}
+                      {option.returnsText}
                     </p>
                   </div>
                 )}
-                {option.minimum_investment_text && (
+                {option.minimumInvestmentText && (
                   <div className="bg-white p-3 rounded-lg shadow-sm">
                     <p className="text-sm text-gray-600">Minimum Investment</p>
                     <p className="text-lg font-semibold text-gray-800">
-                      {option.minimum_investment_text}
+                      {option.minimumInvestmentText}
                     </p>
                   </div>
                 )}

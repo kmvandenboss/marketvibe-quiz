@@ -13,9 +13,9 @@ export interface Quiz {
     slug: string;
     title: string;
     description?: string;
-    heading_text: string;
+    headingText: string;
     emailCaptureMessage: string;
-    results_layout: 'standard' | 'personality';
+    resultsLayout: 'standard' | 'personality';
     personalityResults?: PersonalityResult[];
     active: boolean;
     navigationSettings: {
@@ -79,9 +79,9 @@ export const QuizSchema = z.object({
   slug: z.string(),
   title: z.string(),
   description: z.string().optional(),
-  heading_text: z.string(),
+  headingText: z.string(),
   emailCaptureMessage: z.string(),
-  results_layout: z.enum(['standard', 'personality']),
+  resultsLayout: z.enum(['standard', 'personality']),
   personalityResults: z.array(z.object({
     type: z.string(),
     title: z.string(),

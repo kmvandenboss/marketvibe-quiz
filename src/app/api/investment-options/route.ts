@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
       link: option.link,
       tags: option.tags,
       priority: option.priority,
-      logo_url: option.logoUrl,
-      company_name: option.companyName,
-      returns_text: option.returnsText,
-      minimum_investment_text: option.minimumInvestmentText,
-      investment_type: option.investmentType,
-      key_features: option.keyFeatures,
-      quiz_tags: option.quizTags as Record<string, unknown>
+      logoUrl: option.logo_url,
+      companyName: option.company_name,
+      returnsText: option.returns_text,
+      minimumInvestmentText: option.minimum_investment_text,
+      investmentType: option.investment_type,
+      keyFeatures: option.key_features as string[],
+      quizTags: option.quiz_tags as Record<string, unknown>
     }));
 
     // Find matching investments using our utility function

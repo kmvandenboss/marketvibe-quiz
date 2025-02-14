@@ -147,11 +147,11 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
 
             <div className="flex items-start space-x-4 mb-4">
               {/* Company Logo */}
-              {option.logo_url && (
+              {option.logoUrl && (
                 <div className="w-16 h-16 flex-shrink-0">
                   <img 
-                    src={option.logo_url} 
-                    alt={`${option.company_name || 'Company'} logo`}
+                    src={option.logoUrl} 
+                    alt={`${option.companyName || 'Company'} logo`}
                     className="w-full h-full object-contain rounded-lg"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
@@ -165,33 +165,33 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
                 <h3 className="text-xl font-semibold text-gray-800">
                   {option.title}
                 </h3>
-                {option.company_name && (
-                  <p className="text-gray-600">{option.company_name}</p>
+                {option.companyName && (
+                  <p className="text-gray-600">{option.companyName}</p>
                 )}
               </div>
             </div>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              {option.returns_text && (
+              {option.returnsText && (
                 <div className="bg-white p-3 rounded-lg shadow-sm">
                   <p className="text-sm text-gray-600">Returns</p>
-                  <p className="text-lg font-semibold text-gray-800">{option.returns_text}</p>
+                  <p className="text-lg font-semibold text-gray-800">{option.returnsText}</p>
                 </div>
               )}
-              {option.minimum_investment_text && (
+              {option.minimumInvestmentText && (
                 <div className="bg-white p-3 rounded-lg shadow-sm">
                   <p className="text-sm text-gray-600">Minimum Investment</p>
-                  <p className="text-lg font-semibold text-gray-800">{option.minimum_investment_text}</p>
+                  <p className="text-lg font-semibold text-gray-800">{option.minimumInvestmentText}</p>
                 </div>
               )}
             </div>
 
             {/* Investment Type */}
-            {option.investment_type && (
+            {option.investmentType && (
               <div className="mb-4">
                 <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  {option.investment_type}
+                  {option.investmentType}
                 </span>
               </div>
             )}
@@ -200,9 +200,9 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
             <p className="text-gray-600 mb-4">{option.description}</p>
 
             {/* Key Features */}
-            {option.key_features && option.key_features.length > 0 && (
+            {option.keyFeatures && option.keyFeatures.length > 0 && (
               <ul className="mb-4 space-y-1">
-                {option.key_features.map((feature, idx) => (
+                {option.keyFeatures.map((feature, idx) => (
                   <li key={idx} className="text-gray-600 flex items-start">
                     <span className="text-green-500 mr-2">•</span>
                     {feature}

@@ -17,15 +17,10 @@ export async function POST(request: NextRequest) {
     // Validate request data
     const validationResult = TrackClickSchema.safeParse(body);
     if (!validationResult.success) {
-      await logAnalyticsEvent({
-        eventType: 'LINK_CLICK_VALIDATION_ERROR',
-        quizId: '', // Empty string as this is a validation error without context
-        data: {
-          errors: validationResult.error.issues,
-          rawBody: body
-        }
+      console.error('Link click validation error:', {
+        errors: validationResult.error.issues,
+        rawBody: body
       });
-
       return NextResponse.json(
         { error: 'Invalid request data', details: validationResult.error.issues },
         { status: 400 }
@@ -40,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Log the event with full context
     // Get the lead to find the associated quizId
     const lead = await db().select({
-      quizId: leads.quizId
+      quiz_id: leads.quiz_id
     })
     .from(leads)
     .where(eq(leads.id, leadId))
@@ -50,18 +45,21 @@ export async function POST(request: NextRequest) {
       throw new Error(`Lead not found with ID: ${leadId}`);
     }
 
-    await logAnalyticsEvent({
-      eventType: 'LINK_CLICK',
-      quizId: lead[0].quizId || '',
-      leadId,
-      data: {
-        link,
-        wasTracked,
-        timestamp: new Date().toISOString(),
-        userAgent: request.headers.get('user-agent') || undefined,
-        referer: request.headers.get('referer') || undefined
-      }
-    });
+    // Only log analytics if we have a valid quiz_id
+    if (lead[0].quiz_id) {
+      await logAnalyticsEvent({
+        eventType: 'LINK_CLICK',
+        quizId: lead[0].quiz_id,
+        leadId,
+        data: {
+          link,
+          wasTracked,
+          timestamp: new Date().toISOString(),
+          userAgent: request.headers.get('user-agent') || undefined,
+          referer: request.headers.get('referer') || undefined
+        }
+      });
+    }
 
     return NextResponse.json({ 
       success: true,
@@ -69,18 +67,12 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    // Specific error logging with available context
+    // Log error details but don't attempt analytics event
     const errorDetails = {
       message: error instanceof Error ? error.message : 'Unknown error',
       type: error instanceof Error ? error.constructor.name : 'Unknown',
       timestamp: new Date().toISOString()
     };
-
-    await logAnalyticsEvent({
-      eventType: 'LINK_CLICK_ERROR',
-      quizId: '', // Empty string as this is an error without context
-      data: errorDetails
-    });
 
     console.error('Error tracking link click:', errorDetails);
 

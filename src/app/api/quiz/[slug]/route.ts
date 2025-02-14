@@ -1,9 +1,27 @@
 // src/app/api/quiz/[slug]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { quizzes, questions as questionsTable, question_options, investmentOptions } from '@/db/schema';
+import { quizzes, questions as questionsTable, question_options, investment_options } from '@/db/schema';
 import { eq, inArray } from 'drizzle-orm';
-import { QuizSchema, Quiz } from '@/lib/quiz/types';
+import { QuizSchema, Quiz, InvestmentOption } from '@/lib/quiz/types';
+
+// Type for database response with snake_case columns
+interface QuizRow {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  heading_text: string;
+  email_capture_message: string;
+  results_layout: string;
+  personality_results: unknown;
+  active: boolean;
+  navigation_settings: unknown;
+  seo_metadata: unknown;
+  created_at: Date;
+  updated_at: Date;
+}
+import { transformDatabaseResponse } from '@/utils/case-transform';
 
 async function getQuizBySlug(slug: string) {
   try {
@@ -16,28 +34,19 @@ async function getQuizBySlug(slug: string) {
 
     if (!quiz) return null;
 
-    // Transform quiz data to match Quiz type
-    return {
-      id: quiz.id,
-      slug: quiz.slug,
-      title: quiz.title,
-      description: quiz.description || undefined,
-      heading_text: quiz.heading_text,
-      emailCaptureMessage: quiz.emailCaptureMessage,
-      results_layout: quiz.results_layout as 'standard' | 'personality',
-      personalityResults: quiz.results_layout === 'personality' 
-        ? (quiz.personality_results as Quiz['personalityResults']) 
-        : [],
-      active: quiz.active,
-      navigationSettings: {
+    // Transform the raw database response to camelCase and handle null values
+    const transformedQuiz = transformDatabaseResponse<Quiz>({
+      ...quiz,
+      personality_results: quiz.personality_results || undefined,
+      seo_metadata: quiz.seo_metadata || undefined,
+      navigation_settings: quiz.navigation_settings || {
         allowBack: true,
         showProgressBar: true,
-        showQuestionCount: true,
-        showStartPrompt: true,
-        ...(quiz.navigationSettings as Record<string, boolean> || {})
-      },
-      seoMetadata: quiz.seoMetadata || undefined
-    };
+        showQuestionCount: true
+      }
+    });
+    
+    return transformedQuiz;
   } catch (error) {
     console.error('Error fetching quiz:', error);
     throw new Error('Failed to fetch quiz');
@@ -50,7 +59,7 @@ async function getQuizQuestions(quizId: string) {
     const questions = await db()
       .select()
       .from(questionsTable)
-      .where(eq(questionsTable.quizId, quizId))
+      .where(eq(questionsTable.quiz_id, quizId))
       .orderBy(questionsTable.position);
 
     if (questions.length === 0) return [];
@@ -59,8 +68,8 @@ async function getQuizQuestions(quizId: string) {
     const options = await db()
       .select({
         id: question_options.id,
-        questionId: question_options.questionId,
-        optionText: question_options.optionText,
+        question_id: question_options.question_id,
+        option_text: question_options.option_text,
         tags: question_options.tags,
         weights: question_options.weights,
         position: question_options.position
@@ -68,34 +77,39 @@ async function getQuizQuestions(quizId: string) {
       .from(question_options)
       .innerJoin(
         questionsTable,
-        eq(question_options.questionId, questionsTable.id)
+        eq(question_options.question_id, questionsTable.id)
       )
-      .where(eq(questionsTable.quizId, quizId))
+      .where(eq(questionsTable.quiz_id, quizId))
       .orderBy(question_options.position);
 
     // Group options by question ID
     const optionsByQuestionId = options.reduce((acc, option) => {
-      if (!acc[option.questionId]) {
-        acc[option.questionId] = [];
+      if (!acc[option.question_id]) {
+        acc[option.question_id] = [];
       }
       const transformedOption = {
         id: option.id,
-        text: option.optionText,
+        text: option.option_text,
         tags: Array.isArray(option.tags) ? option.tags : [],
         weight: typeof option.weights === 'object' && option.weights !== null ? 
           (option.weights as { default?: number }).default || 1 : 1
       };
-      acc[option.questionId].push(transformedOption);
+      acc[option.question_id].push(transformedOption);
       return acc;
     }, {} as Record<string, any[]>);
 
-    // Transform questions to include their options
+    // Transform questions and their options to match the Question interface
     const transformedQuestions = questions.map(q => ({
       id: q.id,
-      text: q.questionText,
-      type: q.questionType,
+      text: q.question_text,
+      type: q.question_type,
       order: q.position,
-      options: optionsByQuestionId[q.id] || []
+      options: (optionsByQuestionId[q.id] || []).map(opt => ({
+        id: opt.id,
+        text: opt.text,
+        tags: opt.tags,
+        weight: opt.weight
+      }))
     }));
 
     return transformedQuestions;
@@ -126,40 +140,14 @@ export async function GET(
     // Get the questions
     const questions = await getQuizQuestions(quiz.id);
 
-    // Get investment options with camelCase property names to match InvestmentOption type
+    // Get investment options and transform to camelCase
     const investments = await db()
-      .select({
-        id: investmentOptions.id,
-        title: investmentOptions.title,
-        description: investmentOptions.description,
-        link: investmentOptions.link,
-        tags: investmentOptions.tags,
-        priority: investmentOptions.priority,
-        logo_url: investmentOptions.logoUrl,
-        company_name: investmentOptions.companyName,
-        returns_text: investmentOptions.returnsText,
-        minimum_investment_text: investmentOptions.minimumInvestmentText,
-        investment_type: investmentOptions.investmentType,
-        key_features: investmentOptions.keyFeatures,
-        quiz_tags: investmentOptions.quizTags
-      })
-      .from(investmentOptions)
-      .orderBy(investmentOptions.priority)
-      .then(investments => investments.map(investment => ({
-        id: investment.id,
-        title: investment.title,
-        description: investment.description,
-        link: investment.link,
-        tags: investment.tags,
-        priority: investment.priority,
-        logoUrl: investment.logo_url,
-        companyName: investment.company_name,
-        returnsText: investment.returns_text,
-        minimumInvestmentText: investment.minimum_investment_text,
-        investmentType: investment.investment_type,
-        keyFeatures: investment.key_features,
-        quizTags: investment.quiz_tags
-      })));
+      .select()
+      .from(investment_options)
+      .orderBy(investment_options.priority)
+      .then(investments => investments.map(investment => 
+        transformDatabaseResponse<InvestmentOption>(investment)
+      ));
 
     return NextResponse.json({
       quiz: validatedQuiz,

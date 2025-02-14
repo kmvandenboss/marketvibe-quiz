@@ -54,10 +54,21 @@ export async function POST(request: NextRequest) {
     // Calculate scores from responses
     const scores = calculateQuizScore(questions, validatedData.responses);
     
+    // Determine personality type if it's a personality quiz
+    let personalityResult;
+    let resultsConfig;
+    if (quizData.resultsLayout === 'personality' && quizData.personalityResults) {
+      const personalityTypeResult = determinePersonalityType(scores, quizData.personalityResults);
+      if (personalityTypeResult) {
+        personalityResult = personalityTypeResult.personalityResult;
+        resultsConfig = personalityTypeResult.resultsConfig;
+      }
+    }
+    
     // Get matched investments using the sophisticated matching algorithm
     const matchedInvestments = findMatchingInvestments(scores, investmentOptions, 5);
 
-    // Send email with matched investments
+    // Send email with matched investments and personality results if applicable
     const emailResult = await sendQuizResults(validatedData.email, {
       matchedInvestments,
       quizId: validatedData.quizId
@@ -70,7 +81,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       leadId,
       matchedInvestments,
-      emailSent: emailResult.success
+      emailSent: emailResult.success,
+      personalityResult,
+      resultsConfig
     }, { status: 200 });
   } catch (error) {
     console.error('Error in submit API:', error);

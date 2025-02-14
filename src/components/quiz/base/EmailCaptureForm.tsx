@@ -6,7 +6,7 @@ interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
   matchedOptionsCount: number;
   emailCaptureMessage?: string;
-  heading_text: string;
+  headingText: string;
 }
 
 type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
@@ -18,7 +18,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
   onSubmit, 
   matchedOptionsCount,
   emailCaptureMessage,
-  heading_text
+  headingText
 }) => {
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(true);
@@ -99,7 +99,7 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
         Based on your answers, we have{' '}
         <span className="text-blue-600 font-bold">
-          {matchedOptionsCount} {heading_text}
+          {matchedOptionsCount} {headingText}
         </span>{' '}
         {matchedOptionsCount === 1 ? 'idea' : 'ideas'} for you
       </h2>

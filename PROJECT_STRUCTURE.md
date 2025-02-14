@@ -6,9 +6,11 @@ This document provides an overview of the project structure and organization.
 
 - `.env` - Environment variables
 - `.gitignore` - Git ignore configuration
+- `backup_before_cleanup_2025_02_13.sql` - Database backup file
 - `drizzle.config.ts` - Drizzle ORM configuration
 - `eslint.config.mjs` - ESLint configuration
 - `global.d.ts` - Global TypeScript declarations
+- `hash-password.ts` - Password hashing utility
 - `next.config.js` - Next.js configuration
 - `package.json` - Project dependencies and scripts
 - `package-lock.json` - Locked dependency versions
@@ -27,6 +29,10 @@ Next.js 13+ app directory structure:
 - `layout.tsx` - Root layout component
 - `page.tsx` - Home page component
 - `globals.css` - Global styles
+- `/article` - Article routes
+  - `/warren-buffett-earn-while-you-sleep` - Article page
+    - `layout.tsx` - Article layout component
+    - `page.tsx` - Article content component
 - `/contact` - Contact page route
   - `page.tsx` - Contact page component
 - `/dashboard` - Admin Dashboard routes
@@ -48,6 +54,9 @@ Next.js 13+ app directory structure:
   - `page.tsx` - Quiz landing page
   - `/[slug]` - Dynamic quiz routes
     - `page.tsx` - Dynamic quiz page component
+- `/unsubscribe` - Email unsubscribe routes
+  - `/success` - Unsubscribe confirmation
+    - `page.tsx` - Success page component
 
 ### API Routes (`/src/app/api`)
 - `/analytics` - Analytics tracking endpoints
@@ -72,13 +81,17 @@ Next.js 13+ app directory structure:
 - `/questions` - Questions management endpoint
   - `route.ts` - API route handler
 - `/quiz` - Quiz API endpoints
-  - `[slug]` - Dynamic quiz routes
+  - `/[slug]` - Dynamic quiz routes
     - `route.ts` - Quiz data API handler
     - `/submit` - Quiz submission endpoint
       - `route.ts` - Submission handler
 - `/redirect` - URL redirection endpoint
   - `route.ts` - API route handler
+- `/submit` - General submission endpoint
+  - `route.ts` - Submission handler
 - `/track-click` - Click tracking endpoint
+  - `route.ts` - API route handler
+- `/unsubscribe` - Email unsubscribe endpoint
   - `route.ts` - API route handler
 - `/users` - User management endpoint
   - `route.ts` - API route handler
@@ -127,6 +140,9 @@ Next.js 13+ app directory structure:
     - `0000_snapshot.json` - Initial schema snapshot
     - `0001_snapshot.json` - Updated schema snapshot
 
+### Documentation (`/docs`)
+- `analytics-events.md` - Documentation for analytics event tracking
+
 ### Library (`/src/lib`)
 - `auth.ts` - Authentication utilities and middleware
 - `db.ts` - Database utility functions
@@ -139,6 +155,7 @@ Next.js 13+ app directory structure:
 - `dashboard.ts` - Dashboard-related TypeScript types
 
 ### Utils (`/src/utils`)
+- `email.ts` - Email utility functions
 - `meta-pixel.ts` - Meta Pixel tracking utilities
 - `quiz-utils.ts` - Quiz helper functions
 
@@ -150,6 +167,7 @@ Static files served directly:
   - `arrived-pcf.jpg` - Arrived PCF investment image
   - `arrived-sfr-fund.jpg` - Arrived SFR Fund image
   - `ascent-income-fund.jpg` - Ascent Income Fund image
+  - `buffett-dividends.png` - Warren Buffett dividends article image
   - `globalx.jpg` - GlobalX investment image
   - `groundfloor.jpg` - Groundfloor investment image
   - `ishares.jpg` - iShares investment image
@@ -162,4 +180,5 @@ Static files served directly:
 - `window.svg` - Window icon
 
 ## Scripts (`/scripts`)
-Custom scripts and utilities for project maintenance.
+Custom scripts and utilities for project maintenance:
+- `cleanup_old_data.sql` - Database cleanup script

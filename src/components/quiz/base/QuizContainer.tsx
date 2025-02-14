@@ -362,7 +362,7 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
               onSubmit={handleEmailSubmit}
               matchedOptionsCount={submissionState.matchedOptionsCount}
               emailCaptureMessage={quiz.emailCaptureMessage}
-              heading_text={quiz.heading_text}
+              headingText={quiz.headingText}
             />
           )}
         </MotionDiv>

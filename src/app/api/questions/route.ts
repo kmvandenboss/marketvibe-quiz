@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getQuizQuestions } from '@/db/queries';
+import { transformDatabaseResponse } from '@/utils/case-transform';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,8 @@ export async function GET(request: NextRequest) {
     }
 
     const questions = await getQuizQuestions(quizId);
-    return NextResponse.json({ questions }, { status: 200 });
+    const transformedQuestions = transformDatabaseResponse(questions);
+    return NextResponse.json({ questions: transformedQuestions }, { status: 200 });
   } catch (error) {
     console.error('Error in questions API:', error);
     return NextResponse.json(

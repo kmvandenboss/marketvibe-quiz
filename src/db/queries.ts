@@ -1,8 +1,10 @@
 import { eq, desc, sql, and, inArray } from 'drizzle-orm';
 import { db } from './index';
-import { questions, leads, investmentOptions, analyticsEvents, quizzes, question_options } from './schema';
+import { questions, leads, investment_options, analytics_events, quizzes, question_options } from './schema';
 import type { QuizOverviewMetrics } from '@/types/dashboard';
 import type { QuizResultsConfig, PersonalityTypeResult } from '@/types/quiz';
+import type { Quiz } from '@/lib/quiz/types';
+import { transformDatabaseResponse } from '@/utils/case-transform';
 
 export async function getQuizById(quizId: string) {
   try {
@@ -15,8 +17,8 @@ export async function getQuizById(quizId: string) {
       throw new Error('Quiz not found');
     }
 
-    // Transform the quiz data to ensure proper typing
-    return {
+    // Transform the quiz data to ensure proper typing and casing
+    return transformDatabaseResponse<Quiz>({
       id: quiz[0].id,
       slug: quiz[0].slug,
       title: quiz[0].title,
@@ -24,7 +26,7 @@ export async function getQuizById(quizId: string) {
       heading_text: quiz[0].heading_text,
       results_layout: quiz[0].results_layout,
       personality_results: quiz[0].personality_results ? JSON.parse(JSON.stringify(quiz[0].personality_results)) : undefined
-    };
+    });
   } catch (error) {
     console.error('Error fetching quiz:', error);
     throw new Error('Failed to fetch quiz');
@@ -35,9 +37,9 @@ export async function getQuizQuestions(quizId: string) {
   try {
     const allQuestions = await db().select()
       .from(questions)
-      .where(eq(questions.quizId, quizId))
+      .where(eq(questions.quiz_id, quizId))
       .orderBy(questions.position);
-    return allQuestions;
+    return transformDatabaseResponse(allQuestions);
   } catch (error) {
     console.error('Error fetching quiz questions:', error);
     throw new Error('Failed to fetch quiz questions');
@@ -47,11 +49,30 @@ export async function getQuizQuestions(quizId: string) {
 export async function getInvestmentOptions(quizId?: string) {
   try {
     if (!quizId) {
-      const options = await db().select().from(investmentOptions).orderBy(investmentOptions.priority);
+      const options = await db()
+        .select({
+          id: investment_options.id,
+          title: investment_options.title,
+          description: investment_options.description,
+          link: investment_options.link,
+          tags: investment_options.tags,
+          priority: investment_options.priority,
+          logo_url: investment_options.logo_url,
+          company_name: investment_options.company_name,
+          returns_text: investment_options.returns_text,
+          minimum_investment_text: investment_options.minimum_investment_text,
+          investment_type: investment_options.investment_type,
+          key_features: investment_options.key_features,
+          quiz_tags: investment_options.quiz_tags
+        })
+        .from(investment_options)
+        .orderBy(investment_options.priority);
+      
       return options.map(option => ({
         ...option,
         tags: option.tags as string[],
-        keyFeatures: option.keyFeatures as string[]
+        keyFeatures: option.key_features as string[],
+        quizTags: option.quiz_tags as Record<string, unknown>
       }));
     }
 
@@ -69,17 +90,32 @@ export async function getInvestmentOptions(quizId?: string) {
 
     const quizSlug = quiz[0].slug;
 
-    // Then get investment options where quizTags contains the quiz slug
-    const options = await db().select()
-      .from(investmentOptions)
-      .where(sql`${investmentOptions.quizTags} ? ${quizSlug}`)
-      .orderBy(investmentOptions.priority);
+    // Then get investment options where quiz_tags contains the quiz slug
+    const options = await db()
+      .select({
+        id: investment_options.id,
+        title: investment_options.title,
+        description: investment_options.description,
+        link: investment_options.link,
+        tags: investment_options.tags,
+        priority: investment_options.priority,
+        logo_url: investment_options.logo_url,
+        company_name: investment_options.company_name,
+        returns_text: investment_options.returns_text,
+        minimum_investment_text: investment_options.minimum_investment_text,
+        investment_type: investment_options.investment_type,
+        key_features: investment_options.key_features,
+        quiz_tags: investment_options.quiz_tags
+      })
+      .from(investment_options)
+      .where(sql`${investment_options.quiz_tags} ? ${quizSlug}`)
+      .orderBy(investment_options.priority);
     
-    // Ensure tags are properly typed as string[]
     return options.map(option => ({
       ...option,
       tags: option.tags as string[],
-      keyFeatures: option.keyFeatures as string[]
+      keyFeatures: option.key_features as string[],
+      quizTags: option.quiz_tags as Record<string, unknown>
     }));
   } catch (error) {
     console.error('Error fetching investment options:', error);
@@ -102,20 +138,28 @@ export async function calculatePersonalityType({
       .limit(1);
 
     // Transform the quiz data to ensure proper typing
-    const quizData = {
+    const quizData = transformDatabaseResponse<{
+      resultsLayout: string;
+      personalityResults?: Array<{
+        type: string;
+        title: string;
+        description: string;
+        characteristics: string[];
+      }>;
+    }>({
       results_layout: quiz[0].results_layout,
       personality_results: quiz[0].personality_results ? JSON.parse(JSON.stringify(quiz[0].personality_results)) : undefined
-    };
+    });
 
     if (!quiz.length) {
       return null;
     }
     
-    if (quizData.results_layout !== 'personality') {
+    if (quizData.resultsLayout !== 'personality') {
       return null;
     }
     
-    if (!quizData.personality_results) {
+    if (!quizData.personalityResults) {
       return null;
     }
 
@@ -130,7 +174,7 @@ export async function calculatePersonalityType({
     .where(inArray(question_options.id, selectedOptionIds));
 
     // Get available personality types
-    const personalityResults = quizData.personality_results as Array<{
+    const personalityResults = quizData.personalityResults as Array<{
       type: string;
       title: string;
       description: string;
@@ -167,7 +211,6 @@ export async function calculatePersonalityType({
         dominantTag = tag;
       }
     });
-
 
     console.log('[Personality] Most frequent tag:', {
       tag: dominantTag,
@@ -221,17 +264,17 @@ export async function submitQuizResponse({
     
     await db().insert(leads).values({
       id: leadId,
-      quizId,
+      quiz_id: quizId,
       email,
       name,
       responses,
       score,
-      isAccredited,
-      personalityType,
-      resultsConfig,
-      clickedLinks: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      is_accredited: isAccredited,
+      personality_type: personalityType,
+      results_config: resultsConfig,
+      clicked_links: [],
+      created_at: new Date(),
+      updated_at: new Date()
     });
 
     return leadId;
@@ -251,7 +294,7 @@ export async function trackLinkClick({
   try {
     const lead = await db().select({
       id: leads.id,
-      clickedLinks: leads.clickedLinks
+      clicked_links: leads.clicked_links
     })
     .from(leads)
     .where(eq(leads.id, leadId))
@@ -261,17 +304,15 @@ export async function trackLinkClick({
       throw new Error(`Lead not found with ID: ${leadId}`);
     }
 
-    const currentLinks = Array.isArray(lead[0].clickedLinks) 
-      ? (lead[0].clickedLinks as Array<{ url: string; timestamp: string }>)
+    const currentLinks = Array.isArray(lead[0].clicked_links) 
+      ? (lead[0].clicked_links as Array<{ url: string; timestamp: string }>)
       : [];
     
     if (currentLinks.length >= 3) {
-    // Removed non-essential logging
       return false;
     }
 
     if (currentLinks.some(click => click.url === link)) {
-    // Removed non-essential logging
       return false;
     }
 
@@ -285,12 +326,11 @@ export async function trackLinkClick({
 
     await db().update(leads)
       .set({ 
-        clickedLinks: updatedLinks,
-        updatedAt: new Date()
+        clicked_links: updatedLinks,
+        updated_at: new Date()
       })
       .where(eq(leads.id, leadId));
 
-    // Removed non-essential logging
     return true;
 
   } catch (error) {
@@ -308,34 +348,34 @@ export async function getDashboardMetrics(quizId: string) {
     const [leadsList, analyticsData] = await Promise.all([
       db().select()
         .from(leads)
-        .where(eq(leads.quizId, quizId)),
+        .where(eq(leads.quiz_id, quizId)),
       db().select()
-        .from(analyticsEvents)
-        .where(eq(analyticsEvents.quizId, quizId))
+        .from(analytics_events)
+        .where(eq(analytics_events.quiz_id, quizId))
     ]);
     
     // Basic metrics
     const totalLeads = leadsList.length;
-    const accreditedLeads = leadsList.filter(lead => lead.isAccredited).length;
+    const accreditedLeads = leadsList.filter(lead => lead.is_accredited).length;
     const conversionRate = totalLeads > 0 ? (accreditedLeads / totalLeads) * 100 : 0;
     const leadsWithClicks = leadsList.filter(lead => 
-      Array.isArray(lead.clickedLinks) && lead.clickedLinks.length > 0
+      Array.isArray(lead.clicked_links) && lead.clicked_links.length > 0
     ).length;
 
     // Funnel metrics
-    const quizStarts = analyticsData.filter(event => event.eventType === 'QUIZ_START').length;
+    const quizStarts = analyticsData.filter(event => event.event_type === 'QUIZ_START').length;
     const questionAnswers = new Array(6).fill(0); // Array for each question
     analyticsData
-      .filter(event => event.eventType === 'QUESTION_ANSWERED')
+      .filter(event => event.event_type === 'QUESTION_ANSWERED')
       .forEach(event => {
-        if (event.questionIndex !== null) {
-          questionAnswers[event.questionIndex] = questionAnswers[event.questionIndex] + 1;
+        if (event.question_index !== null) {
+          questionAnswers[event.question_index] = questionAnswers[event.question_index] + 1;
         }
       });
 
     // Count both old and new email submission event types
     const emailSubmissions = analyticsData.filter(event => 
-      ['EMAIL_SUBMISSION', 'EMAIL_SUBMITTED'].includes(event.eventType)
+      ['EMAIL_SUBMISSION', 'EMAIL_SUBMITTED'].includes(event.event_type)
     ).length;
 
     return {
@@ -358,13 +398,21 @@ export async function getDashboardMetrics(quizId: string) {
 export async function getLeadsList(quizId: string) {
   try {
     // First get all investment options for lookup
-    const options = await db().select().from(investmentOptions);
+    const options = await db()
+      .select({
+        id: investment_options.id,
+        title: investment_options.title,
+        link: investment_options.link,
+        logo_url: investment_options.logo_url,
+        company_name: investment_options.company_name
+      })
+      .from(investment_options);
     const optionsMap = new Map(options.map(opt => [opt.link, opt]));
 
     const leadsList = await db().select()
       .from(leads)
-      .where(eq(leads.quizId, quizId))
-      .orderBy(desc(leads.createdAt))
+      .where(eq(leads.quiz_id, quizId))
+      .orderBy(desc(leads.created_at))
       .limit(100);
 
     if (!leadsList || !Array.isArray(leadsList)) {
@@ -375,11 +423,11 @@ export async function getLeadsList(quizId: string) {
       id: lead.id,
       email: lead.email,
       name: lead.name || '',
-      isAccredited: lead.isAccredited || false,
+      isAccredited: lead.is_accredited || false,
       score: lead.score as Record<string, number>,
       responses: lead.responses as Record<string, string>,
-      clickedLinks: Array.isArray(lead.clickedLinks) 
-        ? (lead.clickedLinks as Array<{ url: string; timestamp: string }>).map(click => {
+      clickedLinks: Array.isArray(lead.clicked_links) 
+        ? (lead.clicked_links as Array<{ url: string; timestamp: string }>).map(click => {
             const url = typeof click === 'string' ? click : click.url;
             const timestamp = typeof click === 'string' ? null : click.timestamp;
             return {
@@ -389,7 +437,7 @@ export async function getLeadsList(quizId: string) {
             };
           })
         : [],
-      createdAt: lead.createdAt
+      createdAt: lead.created_at
     }));
   } catch (error) {
     console.error('Error fetching leads list:', error);
@@ -419,16 +467,16 @@ export async function logAnalyticsEvent({
   sessionId?: string;
 }) {
   try {
-    await db().insert(analyticsEvents).values({
-      eventType,
-      quizId,
-      leadId,
-      questionId,
-      questionIndex,
+    await db().insert(analytics_events).values({
+      event_type: eventType,
+      quiz_id: quizId,
+      lead_id: leadId,
+      question_id: questionId,
+      question_index: questionIndex,
       data,
-      userAgent,
-      ipAddress,
-      sessionId,
+      user_agent: userAgent,
+      ip_address: ipAddress,
+      session_id: sessionId,
       timestamp: new Date()
     });
   } catch (error) {
@@ -448,7 +496,7 @@ export async function getQuizzesList() {
     })
     .from(quizzes)
     .where(eq(quizzes.active, true))
-    .orderBy(quizzes.createdAt);
+    .orderBy(quizzes.created_at);
 
     return quizzesList;
   } catch (error) {
@@ -470,14 +518,14 @@ export async function getQuizOverviewMetrics(quizId: string): Promise<QuizOvervi
 
     const leadsList = await db().select()
       .from(leads)
-      .where(eq(leads.quizId, quizId));
+      .where(eq(leads.quiz_id, quizId));
 
     const quizStartEvents = await db().select()
-      .from(analyticsEvents)
+      .from(analytics_events)
       .where(
         and(
-          eq(analyticsEvents.quizId, quizId),
-          eq(analyticsEvents.eventType, 'QUIZ_START')
+          eq(analytics_events.quiz_id, quizId),
+          eq(analytics_events.event_type, 'QUIZ_START')
         )
       );
 
@@ -486,13 +534,13 @@ export async function getQuizOverviewMetrics(quizId: string): Promise<QuizOvervi
       ? (totalLeads / quizStartEvents.length) * 100
       : 0;
 
-    // Find the most recent submission, safely handling null createdAt values
+    // Find the most recent submission, safely handling null created_at values
     const lastSubmission = leadsList.length > 0
       ? leadsList.reduce((latest, current) => {
-          if (!latest.createdAt) return current;
-          if (!current.createdAt) return latest;
-          return latest.createdAt > current.createdAt ? latest : current;
-        }).createdAt
+          if (!latest.created_at) return current;
+          if (!current.created_at) return latest;
+          return latest.created_at > current.created_at ? latest : current;
+        }).created_at
       : null;
 
     return {
