@@ -3,6 +3,7 @@ import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { verifyAuth, createUser } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import { transformDatabaseResponse } from '@/utils/case-transform';
 
 export async function GET(request: Request) {
   try {
@@ -27,20 +28,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    // Get all users
+    // Get all users using snake_case for database fields
     const usersList = await db()
       .select({
         id: users.id,
         email: users.email,
         name: users.name,
         role: users.role,
-        lastLogin: users.lastLogin,
-        createdAt: users.createdAt
+        last_login: users.last_login,
+        created_at: users.created_at
       })
       .from(users)
-      .orderBy(users.createdAt);
+      .orderBy(users.created_at);
 
-    return NextResponse.json(usersList);
+    // Transform to camelCase for frontend
+    const transformedUsers = transformDatabaseResponse(usersList);
+    return NextResponse.json(transformedUsers);
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
