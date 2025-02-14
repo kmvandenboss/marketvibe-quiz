@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     }
 
     // Verify password
-    const isValidPassword = await verifyPassword(password, user[0].hashedPassword);
+    const isValidPassword = await verifyPassword(password, user[0].hashed_password);
     console.log('Password valid:', isValidPassword); // Log password verification result
 
     if (!isValidPassword) {
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     // Update last login
     await db()
       .update(users)
-      .set({ lastLogin: new Date(), updatedAt: new Date() })
+      .set({ last_login: new Date(), updated_at: new Date() })
       .where(eq(users.id, user[0].id));
 
     // Create session and set cookie
