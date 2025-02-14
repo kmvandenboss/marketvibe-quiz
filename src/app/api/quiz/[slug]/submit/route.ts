@@ -2,8 +2,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
-import { leads, quizzes } from '@/db/schema';
+import { quizzes } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { submitQuizResponse } from '@/db/queries';
 
 const SubmissionSchema = z.object({
   quizId: z.string().uuid(),
@@ -32,24 +33,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insert lead with all required fields
-    const [lead] = await db()
-      .insert(leads)
-      .values({
-        quizId: validatedData.quizId,
-        email: validatedData.email,
-        responses: validatedData.responses,
-        score: validatedData.score,
-        clickedLinks: [], // Required field from schema
-        isAccredited: false, // Required field with default
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      .returning();
+    // Submit quiz response using the existing function
+    const leadId = await submitQuizResponse({
+      quizId: validatedData.quizId,
+      email: validatedData.email,
+      responses: validatedData.responses,
+      score: validatedData.score
+    });
 
     return NextResponse.json({ 
       success: true,
-      leadId: lead.id
+      leadId
     });
   } catch (error) {
     console.error('Error in quiz submission:', error);
