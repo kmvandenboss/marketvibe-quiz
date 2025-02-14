@@ -20,10 +20,10 @@ export default function HighYieldQuizPage() {
     id: 'high-yield-quiz',
     slug: 'high-yield-quiz',
     title: 'High-Yield Investment Quiz',
-    heading_text: 'Discover Your Perfect High-Yield Investment Strategy in 60 Seconds',
+    headingText: 'Discover Your Perfect High-Yield Investment Strategy in 60 Seconds',
     description: 'Discover your perfect high-yield investment strategy',
     emailCaptureMessage: 'Get your personalized high-yield investment recommendations',
-    results_layout: 'standard',
+    resultsLayout: 'standard',
     active: true,
     navigationSettings: {
       allowBack: true,
