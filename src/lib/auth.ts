@@ -26,9 +26,9 @@ export async function createSession(userId: string) {
   expiresAt.setHours(expiresAt.getHours() + 8);
 
   await db().insert(sessions).values({
-    userId,
+    user_id: userId,
     token,
-    expiresAt
+    expires_at: expiresAt
   });
 
   const cookieStore = cookies();
@@ -52,7 +52,7 @@ export async function verifyAuth(token: string) {
       .limit(1);
 
     if (!session.length) return false;
-    if (new Date() > new Date(session[0].expiresAt)) return false;
+    if (new Date() > new Date(session[0].expires_at)) return false;
 
     return verified.payload.userId as string;
   } catch {
@@ -92,7 +92,7 @@ export async function createUser({
     .insert(users)
     .values({
       email,
-      hashedPassword,
+      hashed_password: hashedPassword,
       name,
       role
     })

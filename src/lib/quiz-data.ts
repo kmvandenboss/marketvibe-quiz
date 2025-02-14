@@ -152,7 +152,7 @@ export async function getQuizQuestions(quizId: string): Promise<Question[]> {
     const dbQuestions = await db()
       .select()
       .from(questions)
-      .where(eq(questions.quizId, quizId))
+      .where(eq(questions.quiz_id, quizId))
       .orderBy(questions.position);
 
     console.log('Fetched questions:', dbQuestions);
@@ -169,7 +169,7 @@ export async function getQuizQuestions(quizId: string): Promise<Question[]> {
       .from(question_options)
       .where(
         inArray(
-          question_options.questionId,
+          question_options.question_id,
           questionIds
         )
       )
@@ -179,13 +179,13 @@ export async function getQuizQuestions(quizId: string): Promise<Question[]> {
 
     // Group options by question ID
     const optionsByQuestionId = dbOptions.reduce((acc, option) => {
-      if (!acc[option.questionId]) {
-        acc[option.questionId] = [];
+      if (!acc[option.question_id]) {
+        acc[option.question_id] = [];
       }
       // Transform option to match QuestionOption type
-      acc[option.questionId].push({
+      acc[option.question_id].push({
         id: option.id,
-        text: option.optionText,
+        text: option.option_text,
         tags: option.tags as string[],
         weight: (option.weights as { default: number })?.default || 1
       });
@@ -201,12 +201,12 @@ export async function getQuizQuestions(quizId: string): Promise<Question[]> {
       
       return {
         id: q.id,
-        text: q.questionText,
-        type: q.questionType,
+        text: q.question_text,
+        type: q.question_type,
         order: q.position,
         options: questionOptions,
-        created_at: q.createdAt.toISOString(),
-        updated_at: q.updatedAt.toISOString()
+        created_at: q.created_at.toISOString(),
+        updated_at: q.updated_at.toISOString()
       };
     });
 
@@ -238,13 +238,13 @@ export async function getDefaultQuiz(): Promise<{ quiz: Quiz; questions: Questio
       slug: quiz.slug,
       title: quiz.title,
       description: quiz.description || undefined,
-      heading_text: quiz.heading_text,
-      emailCaptureMessage: quiz.emailCaptureMessage,
-      results_layout: quiz.results_layout as 'standard' | 'personality',
+      headingText: quiz.heading_text,
+      emailCaptureMessage: quiz.email_capture_message,
+      resultsLayout: quiz.results_layout as 'standard' | 'personality',
       personalityResults: quiz.personality_results as Quiz['personalityResults'],
       active: quiz.active,
-      navigationSettings: quiz.navigationSettings as Quiz['navigationSettings'],
-      seoMetadata: quiz.seoMetadata as Quiz['seoMetadata']
+      navigationSettings: quiz.navigation_settings as Quiz['navigationSettings'],
+      seoMetadata: quiz.seo_metadata as Quiz['seoMetadata']
     };
 
     const quizQuestions = await getQuizQuestions(quiz.id);
