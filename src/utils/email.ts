@@ -71,28 +71,36 @@ Learn more: ${investment.link}
 To unsubscribe: ${unsubscribeUrl}
     `.trim();
 
-    // Generate HTML version with improved structure
+    // Generate HTML version with inline styles
     const investmentsList = matchedInvestments
       .map(investment => {
         const redirectUrl = `${DOMAIN}/api/email-redirect?to=${encodeURIComponent(investment.link)}`;
         return `
-        <article class="investment">
-          <header>
-            <h2>${investment.title}</h2>
-            <h3>${investment.companyName}</h3>
-          </header>
+        <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px; background-color: #f8f9fa;">
+          <div style="margin-bottom: 16px;">
+            <h2 style="color: #2E7D32; margin: 0 0 4px 0; font-size: 20px; font-weight: 600;">${investment.title}</h2>
+            <h3 style="color: #666; margin: 0; font-size: 16px; font-weight: 500;">${investment.companyName}</h3>
+          </div>
           
-          <p>${investment.description}</p>
+          <p style="color: #333; margin: 16px 0; line-height: 1.5;">${investment.description}</p>
           
-          <section class="features">
-            <h4>Key Features</h4>
-            <ul>
-              ${investment.keyFeatures.map(feature => `<li>${feature}</li>`).join('')}
+          <div style="margin: 20px 0;">
+            <h4 style="color: #333; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">Key Features</h4>
+            <ul style="margin: 0; padding-left: 20px;">
+              ${investment.keyFeatures.map(feature => 
+                `<li style="color: #333; margin: 8px 0; line-height: 1.4;">${feature}</li>`
+              ).join('')}
             </ul>
-          </section>
+          </div>
           
-          <a href="${redirectUrl}" class="cta">Learn More</a>
-        </article>
+          <div style="margin-top: 20px; text-align: left;">
+            <a href="${redirectUrl}" 
+               style="display: inline-block; background-color: #2E7D32; color: white; padding: 12px 24px; 
+                      text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+              Learn More
+            </a>
+          </div>
+        </div>
       `;
       })
       .join('');
@@ -104,63 +112,24 @@ To unsubscribe: ${unsubscribeUrl}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-  <main style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-    <header>
-      <h1 style="color: #2E7D32; text-align: center;">Your Investment Quiz Results</h1>
-      <p style="text-align: center; color: #666;">Based on your responses, we've identified these investment opportunities that align with your preferences:</p>
-    </header>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h1 style="color: #2E7D32; text-align: center; margin-bottom: 8px; font-size: 24px;">Your Investment Quiz Results</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 30px; line-height: 1.5;">
+      Based on your responses, we've identified these investment opportunities that align with your preferences:
+    </p>
 
-    <section style="margin: 2em 0;">
-      ${investmentsList}
-    </section>
+    ${investmentsList}
 
-    <footer style="text-align: center; margin-top: 2em; padding-top: 1em; border-top: 1px solid #eaeaea;">
+    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;">
       <p style="color: #666; font-size: 12px;">
-        <a href="${unsubscribeUrl}" style="color: #2E7D32;">Unsubscribe</a>
+        <a href="${unsubscribeUrl}" style="color: #2E7D32; text-decoration: underline;">Unsubscribe</a>
       </p>
-    </footer>
-  </main>
+    </div>
+  </div>
 </body>
 </html>
     `;
-
-    const styles = `
-.investment {
-  margin-bottom: 2em;
-  padding: 1.25em;
-  border: 1px solid #eaeaea;
-  border-radius: 0.5em;
-}
-.investment h2 {
-  color: #2E7D32;
-  margin: 0;
-}
-.investment h3 {
-  color: #666;
-  margin: 0.5em 0;
-}
-.investment h4 {
-  color: #333;
-  margin: 1em 0 0.5em;
-}
-.features ul {
-  margin: 0;
-  padding-left: 1.5em;
-}
-.features li {
-  margin: 0.5em 0;
-}
-.cta {
-  display: inline-block;
-  background: #2E7D32;
-  color: white;
-  padding: 0.625em 1.25em;
-  text-decoration: none;
-  border-radius: 0.25em;
-  margin-top: 1.25em;
-}
-    `.trim();
 
     // Send email using send-only token
     await resendEmail.emails.send({
