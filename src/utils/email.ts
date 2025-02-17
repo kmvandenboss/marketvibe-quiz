@@ -2,12 +2,11 @@ import { Resend } from 'resend';
 import { InvestmentOption } from '@/types/quiz';
 import { createHash } from 'crypto';
 
-// Use send-only token for sending emails
 const resendEmail = new Resend(process.env.RESEND_API_KEY);
-// Use full access token for audience management
 const resendAdmin = new Resend(process.env.RESEND_FULL_ACCESS_API_KEY);
 
 const GENERAL_AUDIENCE_ID = '592fab99-821d-4508-b693-276772a67eba';
+const DOMAIN = 'https://www.marketvibe.app';
 
 interface QuizResults {
   matchedInvestments: InvestmentOption[];
@@ -28,7 +27,7 @@ function getUnsubscribeUrl(email: string): string {
     audienceId: GENERAL_AUDIENCE_ID,
     token
   });
-  return `${process.env.NEXT_PUBLIC_BASE_URL}/api/unsubscribe?${params.toString()}`;
+  return `${DOMAIN}/api/unsubscribe?${params.toString()}`;
 }
 
 async function addContactToAudience(email: string) {
@@ -49,71 +48,127 @@ async function addContactToAudience(email: string) {
 export async function sendQuizResults(email: string, results: QuizResults) {
   try {
     const { matchedInvestments } = results;
+    const unsubscribeUrl = getUnsubscribeUrl(email);
 
+    // Generate plain text version
+    const plainTextContent = `
+Your Investment Quiz Results
+
+Based on your responses, we've identified these investment opportunities that align with your preferences:
+
+${matchedInvestments.map(investment => `
+${investment.title}
+${investment.companyName}
+
+${investment.description}
+
+Key Features:
+${investment.keyFeatures.map(feature => `• ${feature}`).join('\n')}
+
+Learn more: ${investment.link}
+`).join('\n\n---\n\n')}
+
+To unsubscribe: ${unsubscribeUrl}
+    `.trim();
+
+    // Generate HTML version with improved structure
     const investmentsList = matchedInvestments
       .map(investment => {
-        const redirectUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/email-redirect?to=${encodeURIComponent(investment.link)}`;
+        const redirectUrl = `${DOMAIN}/api/email-redirect?to=${encodeURIComponent(investment.link)}`;
         return `
-        <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px;">
-          <h2 style="color: #2E7D32; margin-top: 0;">${investment.title}</h2>
-          <h3 style="color: #666;">${investment.companyName}</h3>
+        <article class="investment">
+          <header>
+            <h2>${investment.title}</h2>
+            <h3>${investment.companyName}</h3>
+          </header>
           
-          <div style="margin: 15px 0;">
-            <p style="color: #333;">${investment.description}</p>
-          </div>
+          <p>${investment.description}</p>
           
-          <div style="margin: 15px 0;">
-            <strong>Key Features:</strong>
+          <section class="features">
+            <h4>Key Features</h4>
             <ul>
               ${investment.keyFeatures.map(feature => `<li>${feature}</li>`).join('')}
             </ul>
-          </div>
+          </section>
           
-          <div style="margin: 15px 0;">
-            <p><strong>Returns:</strong> ${investment.returnsText}</p>
-          </div>
-          
-          <div style="margin-top: 20px;">
-            <a href="${redirectUrl}" style="background-color: #2E7D32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Learn More</a>
-          </div>
-        </div>
+          <a href="${redirectUrl}" class="cta">Learn More</a>
+        </article>
       `;
       })
       .join('');
 
-    const unsubscribeUrl = getUnsubscribeUrl(email);
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <main style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <header>
+      <h1 style="color: #2E7D32; text-align: center;">Your Investment Quiz Results</h1>
+      <p style="text-align: center; color: #666;">Based on your responses, we've identified these investment opportunities that align with your preferences:</p>
+    </header>
 
-    const emailContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #2E7D32; text-align: center;">Your Matched Investment Options</h1>
-        
-        <p style="text-align: center; color: #666; margin-bottom: 30px;">
-          Based on your quiz responses, we've identified the following investment opportunities that match your preferences:
-        </p>
-        
-        ${investmentsList}
-        
-        <p style="text-align: center; color: #666; margin-top: 30px;">
-          Thank you for taking our quiz!
-        </p>
+    <section style="margin: 2em 0;">
+      ${investmentsList}
+    </section>
 
-        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;">
-          <p style="color: #666; font-size: 12px;">
-            Don't want to receive these emails? <a href="${unsubscribeUrl}" style="color: #2E7D32; text-decoration: underline;">Unsubscribe here</a>
-          </p>
-        </div>
-      </div>
+    <footer style="text-align: center; margin-top: 2em; padding-top: 1em; border-top: 1px solid #eaeaea;">
+      <p style="color: #666; font-size: 12px;">
+        <a href="${unsubscribeUrl}" style="color: #2E7D32;">Unsubscribe</a>
+      </p>
+    </footer>
+  </main>
+</body>
+</html>
     `;
 
-    // Try to add contact to audience, but continue even if it fails
-    await addContactToAudience(email);
+    const styles = `
+.investment {
+  margin-bottom: 2em;
+  padding: 1.25em;
+  border: 1px solid #eaeaea;
+  border-radius: 0.5em;
+}
+.investment h2 {
+  color: #2E7D32;
+  margin: 0;
+}
+.investment h3 {
+  color: #666;
+  margin: 0.5em 0;
+}
+.investment h4 {
+  color: #333;
+  margin: 1em 0 0.5em;
+}
+.features ul {
+  margin: 0;
+  padding-left: 1.5em;
+}
+.features li {
+  margin: 0.5em 0;
+}
+.cta {
+  display: inline-block;
+  background: #2E7D32;
+  color: white;
+  padding: 0.625em 1.25em;
+  text-decoration: none;
+  border-radius: 0.25em;
+  margin-top: 1.25em;
+}
+    `.trim();
 
     // Send email using send-only token
     await resendEmail.emails.send({
       from: 'MarketVibe <quiz@marketvibe.app>',
       to: email,
-      subject: 'Your Matched Investment Options from MarketVibe',
-      html: emailContent,
+      subject: 'Your Investment Quiz Results',
+      html: htmlContent,
+      text: plainTextContent,
       headers: {
         'List-Unsubscribe': `<${unsubscribeUrl}>`
       }
