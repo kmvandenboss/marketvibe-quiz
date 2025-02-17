@@ -51,7 +51,9 @@ export async function sendQuizResults(email: string, results: QuizResults) {
     const { matchedInvestments } = results;
 
     const investmentsList = matchedInvestments
-      .map(investment => `
+      .map(investment => {
+        const redirectUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/email-redirect?to=${encodeURIComponent(investment.link)}`;
+        return `
         <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px;">
           <h2 style="color: #2E7D32; margin-top: 0;">${investment.title}</h2>
           <h3 style="color: #666;">${investment.companyName}</h3>
@@ -69,14 +71,14 @@ export async function sendQuizResults(email: string, results: QuizResults) {
           
           <div style="margin: 15px 0;">
             <p><strong>Returns:</strong> ${investment.returnsText}</p>
-            <p><strong>Minimum Investment:</strong> ${investment.minimumInvestmentText}</p>
           </div>
           
           <div style="margin-top: 20px;">
-            <a href="${investment.link}" style="background-color: #2E7D32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Learn More</a>
+            <a href="${redirectUrl}" style="background-color: #2E7D32; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Learn More</a>
           </div>
         </div>
-      `)
+      `;
+      })
       .join('');
 
     const unsubscribeUrl = getUnsubscribeUrl(email);

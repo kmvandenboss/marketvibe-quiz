@@ -142,6 +142,7 @@ Next.js 13+ app directory structure:
 
 ### Documentation (`/docs`)
 - `analytics-events.md` - Documentation for analytics event tracking
+- `case-conventions.md` - Documentation for case convention standards
 
 ### Library (`/src/lib`)
 - `auth.ts` - Authentication utilities and middleware
@@ -157,6 +158,7 @@ Next.js 13+ app directory structure:
 ### Utils (`/src/utils`)
 - `email.ts` - Email utility functions
 - `meta-pixel.ts` - Meta Pixel tracking utilities
+- `case-transform.ts` - Case transformation utilities
 - `quiz-utils.ts` - Quiz helper functions
 
 ## Public Assets (`/public`)

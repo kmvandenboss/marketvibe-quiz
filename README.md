@@ -1,32 +1,47 @@
 # MarketVibe Quiz App
 
-A Next.js application for creating and managing investment-focused quizzes with personality matching and investment recommendations.
+A Next.js application for creating and managing investment-focused quizzes with personality matching, investment recommendations, and integrated content marketing features.
 
 ## System Architecture
 
 ### Core Components
 
 1. **Quiz Engine**
-   - Located in `src/components/quiz/base/QuizContainer.tsx`
-   - Manages quiz state, question flow, and user responses
-   - Handles analytics tracking for each quiz interaction
+   - Core Files:
+     - `src/components/quiz/base/QuizContainer.tsx`: Main quiz logic and state management
+     - `src/components/quiz/base/QuestionCard.tsx`: Question display and interaction
+     - `src/components/quiz/base/ResultsCard.tsx`: Standard results display
+     - `src/components/quiz/base/PersonalityResultsCard.tsx`: Personality quiz results
+     - `src/components/quiz/Layouts/StandardLayout.tsx`: Quiz layout and navigation
    - Features:
      - Progressive question display
-     - Back navigation (configurable)
-     - Progress tracking
-     - Email capture
+     - Configurable navigation:
+       - Back navigation toggle
+       - Progress bar display
+       - Question count indicator
+     - Email capture with customizable messaging
      - Results calculation and display
+     - Personality type matching with JSON-based results
+     - Investment recommendations
+     - SEO metadata management
 
 2. **Data Processing**
-   - Core utilities in `src/utils/quiz-utils.ts`
-   - Key functions:
-     - `calculateQuizScore`: Processes answers to generate tag-based scores
-     - `findMatchingInvestments`: Matches user profiles with investment options
-     - `determinePersonalityType`: Maps quiz results to personality profiles
-     - `getQuizProgress`: Calculates completion percentage
+   - Core Files:
+     - `src/utils/quiz-utils.ts`: Quiz processing utilities
+       - `calculateQuizScore`: Score calculation logic
+       - `findMatchingInvestments`: Investment matching algorithm
+       - `determinePersonalityType`: Personality quiz logic
+     - `src/utils/case-transform.ts`: Data transformation utilities
+     - `src/lib/quiz-data.ts`: Quiz data management
+     - `src/types/quiz.ts`: TypeScript definitions
 
-3. **Database Schema** (`src/db/schema.ts`)
-   - Tables:
+3. **Database Layer**
+   - Core Files:
+     - `src/db/schema.ts`: Database schema definitions
+     - `src/db/queries.ts`: Database operations
+     - `src/db/config.ts`: Database configuration
+     - `src/db/migrate.ts`: Migration utilities
+   - Key Tables:
      - `quizzes`: Quiz configurations and metadata
      - `questions`: Quiz questions with type and position
      - `question_options`: Answer options with tags and weights
@@ -36,215 +51,195 @@ A Next.js application for creating and managing investment-focused quizzes with 
      - `analytics_metrics`: Aggregated performance data
      - `users`: Admin user management
      - `sessions`: Authentication session tracking
+     - `articles`: Content marketing materials
+     - `meta_conversions`: Meta Pixel conversion tracking
 
-### Data Flow
+### API Routes
 
-1. **Quiz Initialization**
-   - Quiz loaded via `/api/quiz/[slug]/route.ts`
-   - Questions and options fetched from database
-   - Quiz configuration determines UI elements and navigation
+1. **Quiz Management**
+   - `src/app/api/quiz/[slug]/route.ts`: Quiz data retrieval
+   - `src/app/api/quiz/[slug]/submit/route.ts`: Quiz submission
+   - `src/app/api/questions/route.ts`: Question management
+   - `src/app/api/investment-options/route.ts`: Investment options
 
-2. **Quiz Progression**
-   - User answers tracked in client-side state
-   - Analytics events logged for:
-     - Quiz starts
-     - Question answers
-     - Email submissions
-     - Result generation
+2. **Analytics & Tracking**
+   - `src/app/api/analytics/track/route.ts`: Event tracking
+   - `src/app/api/track-click/route.ts`: Click tracking
+   - `src/app/api/dashboard/metrics/route.ts`: Metrics aggregation
+   - `src/app/api/dashboard/leads/route.ts`: Lead management
 
-3. **Results Processing**
-   - Answer processing:
-     - Tag-based scoring system
-     - Personality type matching (if configured)
-     - Investment option matching
-   - Email capture required for full results
-   - Results stored in leads table with:
-     - User responses
-     - Calculated scores
-     - Matched investments
-     - Personality type (if applicable)
-
-4. **Dashboard Analytics**
-   - Real-time metrics via:
-     - `/api/dashboard/overview/route.ts`: Quiz-level statistics
-     - `/api/dashboard/metrics/route.ts`: Detailed performance data
-   - Protected by authentication middleware
-   - Tracks:
-     - Completion rates
-     - User engagement
-     - Investment matches
-     - Email captures
+3. **Authentication**
+   - `src/app/api/auth/login/route.ts`: User authentication
+   - `src/lib/auth.ts`: Authentication utilities
+   - `src/middleware.ts`: Route protection
 
 ### Key Features
 
 1. **Quiz Types**
-   - Standard investment matching
-   - Personality-based profiling
-   - Configurable navigation and UI elements
+   - Implementation Files:
+     - `src/components/quiz/base/QuizContainer.tsx`: Core quiz logic
+     - `src/components/quiz/base/PersonalityResultsCard.tsx`: Personality results
+     - `src/app/high-yield-quiz/page.tsx`: High-yield quiz implementation
 
 2. **Investment Matching**
-   - Tag-based scoring system
-   - Priority-weighted recommendations
-   - Configurable matching algorithms
+   - Core Files:
+     - `src/utils/quiz-utils.ts`: Matching algorithms
+       - `calculateQuizScore`: Tag-based scoring
+       - `findMatchingInvestments`: Recommendation logic
+     - `src/db/queries.ts`: Investment data queries
+     - `src/types/quiz.ts`: Investment type definitions
+   - Features:
+     - Tag-based scoring system:
+       - Question-specific tags and weights
+       - Quiz-specific tag overrides
+       - Cumulative score calculation
+     - Priority-weighted recommendations:
+       - Configurable priority levels
+       - Quiz-specific targeting
+       - Dynamic sorting and filtering
+     - Investment details:
+       - Company information and branding
+       - Return metrics and minimums
+       - Key features and benefits
+       - Click tracking and analytics
+     - Accredited investor tracking:
+       - Status tracking per lead
+       - Specialized recommendations
+       - Compliance tracking
 
-3. **User Tracking & Analytics**
-   - Detailed analytics events:
-     - Quiz starts and completions
-     - Question-by-question progression
-     - Email submissions and errors
-     - Investment recommendation generation
-   - Link click tracking:
-     - Limited to 3 clicks per lead
-     - Timestamps for each click
-     - Association with investment options
-   - Session-based user flow tracking:
-     - User agent and IP tracking
-     - Session persistence
-     - Funnel analysis capabilities
-   - Conversion analytics:
-     - Completion rates by question
-     - Email capture success rates
-     - Investment option click-through rates
-     - Accredited investor tracking
+3. **Content Marketing**
+   - Implementation Files:
+     - `src/app/article/[slug]/page.tsx`: Article pages
+     - `src/app/article/[slug]/layout.tsx`: Article layouts
+     - Example: `src/app/article/warren-buffett-earn-while-you-sleep/page.tsx`
 
-4. **Admin Dashboard**
-   - Quiz performance metrics
-   - User engagement analytics
-   - Lead management
-   - Quiz configuration
+4. **Analytics System**
+   - Core Files:
+     - `src/app/api/analytics/track/route.ts`: Event tracking
+     - `src/app/api/dashboard/metrics/route.ts`: Metrics processing
+     - `docs/analytics-events.md`: Event documentation
+   - Event Types:
+     - `QUIZ_START`: Initial engagement
+     - `QUESTION_ANSWERED`: Response tracking
+     - `EMAIL_SUBMITTED`: Capture success
+     - `RECOMMENDATIONS_GENERATED`: Results delivery
+
+5. **Email Automation System**
+   - Core Files:
+     - `src/utils/email.ts`: Main email functionality
+       - `sendQuizResults`: Sends personalized recommendations
+       - `addContactToAudience`: Manages Resend audience
+       - `generateUnsubscribeToken`: Creates secure tokens
+     - `src/app/api/unsubscribe/route.ts`: Handles unsubscribe requests
+     - `src/app/unsubscribe/success/page.tsx`: Confirmation page
+   - Email Templates:
+     - Investment recommendations template in `sendQuizResults` function
+       - Responsive HTML design
+       - Dynamic investment details
+       - Branded styling
+       - Unsubscribe link generation
+   - Resend API Integration:
+     - Two-token system:
+       - `RESEND_API_KEY`: Send-only operations
+       - `RESEND_FULL_ACCESS_API_KEY`: Audience management
+     - Audience Management:
+       - General audience ID: `GENERAL_AUDIENCE_ID`
+       - Contact creation and updates
+       - Unsubscribe handling
+   - Security Features:
+     - Secure token generation for unsubscribe links
+     - Token verification on unsubscribe
+     - List-Unsubscribe header support
+   - Lead Processing:
+     - Triggered from `src/app/api/quiz/[slug]/submit/route.ts`
+     - Lead data stored via `src/db/queries.ts:submitQuizResponse`
+     - Click tracking in `src/db/queries.ts:trackLinkClick`
+
+6. **Admin Dashboard**
+   - Core Files:
+     - `src/app/dashboard/page.tsx`: Main dashboard
+     - `src/app/dashboard/layout.tsx`: Dashboard layout
+     - `src/components/dashboard/QuizOverview.tsx`: Quiz metrics
+     - `src/components/dashboard/LeadsTable.tsx`: Lead management
 
 ### Security & Authentication
 
 1. **Admin Access**
-   - Token-based authentication
-   - Session management
-   - Role-based access control
+   - Implementation Files:
+     - `src/lib/auth.ts`: Authentication logic
+     - `src/middleware.ts`: Route protection
+     - `src/app/api/auth/login/route.ts`: Login handling
 
 2. **API Protection**
-   - Auth middleware on sensitive routes
-   - Request validation using Zod
-   - Error handling and logging
+   - Core Files:
+     - `src/middleware.ts`: Request validation
+     - `src/lib/auth.ts`: Token verification
+     - `src/utils/email.ts`: Secure token generation
 
-### File Structure Quick Reference
+### Development Guidelines
+
+1. **Case Conventions**
+   - Reference: `docs/case-conventions.md`
+   - Implementation: `src/utils/case-transform.ts`
+
+2. **Analytics Implementation**
+   - Reference: `docs/analytics-events.md`
+   - Implementation: `src/app/api/analytics/track/route.ts`
+
+3. **Error Handling**
+   - Implementation across all API routes
+   - Centralized logging in API handlers
+
+4. **State Management**
+   - Client State: `src/components/quiz/base/QuizContainer.tsx`
+   - Server State: `src/db/queries.ts`
+
+## Changelog
+
+### 2025-02-14
+- Implemented Resend API integration for email automation
+- Added Meta Pixel integration for conversion tracking
+- Implemented standardized case transformation utilities
+- Enhanced analytics event tracking system
+- Added article content system with custom layouts
+- Improved unsubscribe functionality
+- Updated API response formats for consistency
+
+### 2025-02-06
+- Fixed personality quiz scoring system:
+  - Restored personality type calculation
+  - Added proper quiz data fetching
+  - Improved error handling
+  - Enhanced results display
+
+### 2025-01-30
+- Implemented high-yield investment quiz
+- Added accredited investor tracking
+- Enhanced dashboard metrics
+- Improved lead management system
+
+## File Structure
 
 ```
 src/
 ├── app/                    # Next.js 13+ app directory
 │   ├── api/               # API routes
-│   │   ├── analytics/     # Analytics endpoints
-│   │   ├── auth/         # Authentication
-│   │   ├── dashboard/    # Admin dashboard data
-│   │   └── quiz/         # Quiz data and submission
-│   └── dashboard/        # Dashboard pages
+│   ├── article/           # Article pages
+│   ├── dashboard/         # Admin interface
+│   ├── quiz/             # Quiz pages
+│   └── unsubscribe/      # Email management
 ├── components/
-│   ├── dashboard/        # Dashboard UI components
-│   ├── quiz/            # Quiz UI components
-│   └── ui/              # Shared UI components
-├── db/
-│   ├── schema.ts        # Database schema
-│   └── queries.ts       # Database operations
-├── lib/
-│   ├── auth.ts          # Authentication utilities
-│   └── quiz-data.ts     # Quiz data handling
+│   ├── dashboard/        # Admin components
+│   ├── quiz/             # Quiz components
+│   └── ui/               # Shared components
+├── db/                   # Database layer
+├── lib/                  # Core utilities
 ├── types/               # TypeScript definitions
-└── utils/               # Utility functions
+└── utils/               # Helper functions
 ```
 
-## Common Operations
+## Documentation
 
-### Troubleshooting
-
-1. **Quiz Flow Issues**
-   - Check `QuizContainer.tsx` for state management
-   - Verify analytics events in `analytics_events` table
-   - Review quiz configuration in database
-
-2. **Results Problems**
-   - Examine `quiz-utils.ts` for scoring logic:
-     - Tag-based scoring calculation
-     - Investment matching algorithms
-     - Personality type determination
-   - Check investment matching in `findMatchingInvestments`:
-     - Tag matching logic
-     - Priority weighting
-     - Quiz-specific tag overrides
-   - Verify lead data in database:
-     - Response records
-     - Score calculations
-     - Click tracking
-     - Personality matches
-
-3. **Dashboard Issues**
-   - Check authentication in `auth.ts`
-   - Verify metrics queries in `queries.ts`
-   - Review API responses in browser console
-
-### Adding Features
-
-1. **New Quiz Type**
-   - Extend quiz schema
-   - Add type definitions
-   - Implement scoring logic
-   - Create UI components
-
-2. **Custom Analytics**
-   - Add event types
-   - Create tracking functions
-   - Implement dashboard displays
-
-3. **New Investment Options**
-   - Add to investment_options table
-   - Update matching logic
-   - Configure display components
-
-## Changelog
-
-### 2024-02-06
-- Fixed personality quiz scoring system:
-  - Restored personality type calculation in submit endpoint
-  - Added proper quiz data fetching with personalityResults
-  - Fixed server-side URL handling for quiz data retrieval
-  - Improved error handling for missing personality results
-  - Flow: QuizContainer → submit endpoint → personality calculation → results display
-
-## Development Guidelines
-
-1. **Analytics Implementation**
-   - Always track:
-     - User interactions
-     - State changes
-     - Error conditions
-   - Use consistent event naming
-
-2. **Error Handling**
-   - Implement try-catch blocks
-   - Log errors with context
-   - Provide user feedback
-   - Track in analytics
-
-3. **State Management**
-   - Client-side state:
-     - Current question tracking
-     - Answer collection
-     - Progress calculation
-     - Email capture state
-   - Server-side state:
-     - Quiz configurations
-     - User responses
-     - Analytics events
-     - Lead tracking
-   - Database persistence:
-     - Normalized quiz data
-     - User responses
-     - Analytics events
-     - Click tracking
-   - Performance optimization:
-     - Quiz data caching
-     - Analytics batch processing
-     - Optimistic UI updates
-
-4. **Security Considerations**
-   - Validate all inputs
-   - Authenticate sensitive routes
-   - Sanitize database queries
-   - Log security events
+- [Analytics Events](docs/analytics-events.md)
+- [Case Conventions](docs/case-conventions.md)
+- [Project Structure](PROJECT_STRUCTURE.md)
