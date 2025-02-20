@@ -32,21 +32,27 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
   const [isTracking, setIsTracking] = useState(false);
   const [trackingError, setTrackingError] = useState<string | null>(null);
 
-  const handleLinkClick = useCallback(async (link: string) => {
+  const handleLinkClick = useCallback(async (e: React.MouseEvent, link: string) => {
+    e.preventDefault();
+    
     if (!leadId || !link || !quizId) {
       console.error('Missing required data:', { leadId, link, quizId });
       return;
     }
 
+    // If already clicked or max clicks reached, open in new tab immediately
     if (clickedLinks.length >= 3 || clickedLinks.includes(link)) {
-      window.open(`/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
+      const url = `/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
+      window.open(url, '_blank');
       return;
     }
 
+    // Show tracking state
     setIsTracking(true);
     setTrackingError(null);
-    
+
     try {
+      // Track the click first
       const response = await fetch('/api/track-click', {
         method: 'POST',
         headers: {
@@ -65,11 +71,20 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
         setClickedLinks(prev => [...prev, link]);
       }
 
-      window.open(`/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
+      // Minimal delay to ensure tracking state is updated
+      setTimeout(() => {
+        const url = `/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
+        window.open(url, '_blank');
+      }, 50);
     } catch (error) {
       console.error('Error tracking link click:', error);
       setTrackingError('Unable to track click, but opening link anyway');
-      window.open(`/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`, '_blank');
+      
+      // Navigate even if tracking fails
+      setTimeout(() => {
+        const url = `/api/redirect?leadId=${leadId}&quizId=${quizId}&link=${encodeURIComponent(link)}&to=${encodeURIComponent(link)}`;
+        window.open(url, '_blank');
+      }, 50);
     } finally {
       setIsTracking(false);
     }
@@ -213,8 +228,8 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
 
             {/* CTA Button */}
             <button
-              onClick={() => handleLinkClick(option.link)}
-              className={`w-full px-6 py-3 rounded-lg text-white font-medium transition-colors ${
+              onClick={(e) => handleLinkClick(e, option.link)}
+              className={`w-full px-6 py-3 rounded-lg text-white font-medium transition-colors cursor-pointer touch-manipulation ${
                 clickedLinks.includes(option.link)
                   ? 'bg-green-600 hover:bg-green-700'
                   : 'bg-blue-600 hover:bg-blue-700'
