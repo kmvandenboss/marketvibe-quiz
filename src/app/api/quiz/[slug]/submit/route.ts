@@ -4,13 +4,18 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { quizzes } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { submitQuizResponse } from '@/db/queries';
+import { submitQuizResponse, getQuizQuestions, getInvestmentOptions, logAnalyticsEvent } from '@/db/queries';
+import { calculateQuizScore, findMatchingInvestments } from '@/utils/quiz-utils';
+import { sendQuizResults, addContactToBrevo } from '@/utils/email';
+import { transformDatabaseResponse } from '@/utils/case-transform';
+import { Question, InvestmentOption } from '@/types/quiz';
 
 const SubmissionSchema = z.object({
   quizId: z.string().uuid(),
   email: z.string().email(),
   responses: z.record(z.string(), z.string()),
-  score: z.record(z.string(), z.number())
+  name: z.string().optional(),
+  isAccredited: z.boolean().optional()
 });
 
 export async function POST(request: Request) {
@@ -33,17 +38,56 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get quiz questions and calculate score
+    const rawQuestions = await getQuizQuestions(validatedData.quizId);
+    const questions = transformDatabaseResponse<Question[]>(rawQuestions);
+    const score = calculateQuizScore(questions, validatedData.responses);
+
     // Submit quiz response using the existing function
     const leadId = await submitQuizResponse({
       quizId: validatedData.quizId,
       email: validatedData.email,
+      name: validatedData.name,
       responses: validatedData.responses,
-      score: validatedData.score
+      score: score,
+      isAccredited: validatedData.isAccredited || false
     });
+
+    // Get matching investments for the lead
+    const rawInvestmentOptions = await getInvestmentOptions(validatedData.quizId);
+    const investmentOptions = transformDatabaseResponse<InvestmentOption[]>(rawInvestmentOptions);
+    const matchedInvestments = findMatchingInvestments(score, investmentOptions);
+
+    // Log analytics event for email submission
+    await logAnalyticsEvent({
+      eventType: 'EMAIL_SUBMITTED',
+      quizId: validatedData.quizId,
+      leadId,
+      data: {
+        email: validatedData.email,
+        matchedInvestments: matchedInvestments.map(i => i.title)
+      }
+    });
+
+    // Add lead to Brevo with matched investments
+    await addContactToBrevo(
+      validatedData.email, 
+      leadId, 
+      validatedData.name, 
+      matchedInvestments
+    );
+
+    // Send quiz results email
+    await sendQuizResults(validatedData.email, {
+      matchedInvestments,
+      quizId: validatedData.quizId,
+      leadId
+    }, validatedData.name);
 
     return NextResponse.json({ 
       success: true,
-      leadId
+      leadId,
+      matchedInvestments
     });
   } catch (error) {
     console.error('Error in quiz submission:', error);
