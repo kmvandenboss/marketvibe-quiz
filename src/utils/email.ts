@@ -197,7 +197,7 @@ export async function sendQuizResultsViaBrevo(email: string, results: QuizResult
 
     // Generate plain text version
     const plainTextContent = `
-Your Investment Quiz Results
+Your Full List of Investment Ideas
 
 Based on your responses, we've identified these investment opportunities that align with your preferences:
 
@@ -259,7 +259,7 @@ To unsubscribe: ${unsubscribeUrl}
 </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-    <h1 style="color: #2E7D32; text-align: center; margin-bottom: 8px; font-size: 24px;">Your Investment Quiz Results</h1>
+    <h1 style="color: #2E7D32; text-align: center; margin-bottom: 8px; font-size: 24px;">Your Full List of Investment Ideas</h1>
     <p style="text-align: center; color: #666; margin-bottom: 30px; line-height: 1.5;">
       Based on your responses, we've identified these investment opportunities that align with your preferences:
     </p>
@@ -279,14 +279,14 @@ To unsubscribe: ${unsubscribeUrl}
     // Prepare email data for Brevo
     const emailData = {
       sender: {
-        name: 'MarketVibe',
-        email: 'quiz@marketvibe.app'
+        name: 'Kevin at MarketVibe',
+        email: 'kevin@marketvibe.app'
       },
       to: [{
         email: email,
         name: name || email
       }],
-      subject: 'Your Investment Quiz Results',
+      subject: 'Your Full Quiz Results - Additional investment ideas unlocked',
       htmlContent: htmlContent,
       textContent: plainTextContent,
       headers: {
@@ -339,7 +339,7 @@ export async function sendQuizResultsViaResend(email: string, results: QuizResul
 
     // Generate plain text version
     const plainTextContent = `
-Your Investment Quiz Results
+Your Full List of Investment Ideas
 
 Based on your responses, we've identified these investment opportunities that align with your preferences:
 
@@ -401,7 +401,7 @@ To unsubscribe: ${unsubscribeUrl}
 </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
   <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-    <h1 style="color: #2E7D32; text-align: center; margin-bottom: 8px; font-size: 24px;">Your Investment Quiz Results</h1>
+    <h1 style="color: #2E7D32; text-align: center; margin-bottom: 8px; font-size: 24px;">Your Full List of Investment Ideas</h1>
     <p style="text-align: center; color: #666; margin-bottom: 30px; line-height: 1.5;">
       Based on your responses, we've identified these investment opportunities that align with your preferences:
     </p>
@@ -420,9 +420,9 @@ To unsubscribe: ${unsubscribeUrl}
 
     // Send email using Resend (fallback method)
     await resendEmail.emails.send({
-      from: 'MarketVibe <quiz@marketvibe.app>',
+      from: 'Kevin at MarketVibe <kevin@marketvibe.app>',
       to: email,
-      subject: 'Your Investment Quiz Results',
+      subject: 'Your Full Quiz Results - Additional investment ideas unlocked',
       html: htmlContent,
       text: plainTextContent,
       headers: {
