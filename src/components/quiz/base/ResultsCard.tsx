@@ -1,6 +1,6 @@
 // src/components/quiz/ResultsCard.tsx
 import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionProps } from 'framer-motion';
 import type { InvestmentOption } from '@/lib/quiz/types';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -12,14 +12,13 @@ interface ResultsCardProps {
   error?: string;
 }
 
-type MotionDivProps = React.ComponentProps<'div'> & {
-  initial?: any;
-  animate?: any;
-  exit?: any;
-  transition?: any;
-};
+// Motion component types
+type MotionDivProps = MotionProps & React.ComponentProps<'div'>;
+type MotionButtonProps = MotionProps & React.ComponentProps<'button'>;
 
+// Motion components
 const MotionDiv = motion.div as React.FC<MotionDivProps>;
+const MotionButton = motion.button as React.FC<MotionButtonProps>;
 
 export const ResultsCard: React.FC<ResultsCardProps> = ({
   leadId,
@@ -113,9 +112,12 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-lg shadow-lg p-6"
     >
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        Your Personalized Investment Ideas
-      </h2>
+      <h2 
+        className="text-2xl font-semibold text-gray-800 mb-6" 
+        dangerouslySetInnerHTML={{
+          __html: "<strong>Congratulations!</strong> You've been matched with investments that can be added to your portfolio today:"
+        }} 
+      />
 
       <div className="space-y-6">
         <AnimatePresence mode="wait">
@@ -155,9 +157,27 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
           >
             {/* Best Match Badge - only show for first option */}
             {index === 0 && (
-              <div className="absolute -top-2 -right-2 bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-md">
+              <MotionDiv
+                className="absolute -top-2 -right-2 bg-green-600 text-white px-4 py-1.5 rounded-full text-base font-semibold shadow-md"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ 
+                  delay: 2.5, // Time for user to read headline
+                  duration: 0.5,
+                  type: "spring",
+                  stiffness: 200
+                }}
+                whileInView={{
+                  scale: [1, 1.1, 1],
+                  transition: {
+                    delay: 3, // Pulse after appearing
+                    duration: 1,
+                    repeat: 1
+                  }
+                }}
+              >
                 Best Match
-              </div>
+              </MotionDiv>
             )}
 
             <div className="flex items-start space-x-4 mb-4">
@@ -227,17 +247,41 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
             )}
 
             {/* CTA Button */}
-            <button
-              onClick={(e) => handleLinkClick(e, option.link)}
-              className={`w-full px-6 py-3 rounded-lg text-white font-medium transition-colors cursor-pointer touch-manipulation ${
-                clickedLinks.includes(option.link)
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              }`}
-              disabled={isTracking}
-            >
-              {clickedLinks.includes(option.link) ? 'Viewed' : 'Learn More'}
-            </button>
+            {clickedLinks.includes(option.link) ? (
+              <button
+                className="w-full px-6 py-3 rounded-lg text-white font-medium bg-green-600 hover:bg-green-700 cursor-pointer touch-manipulation"
+                disabled={isTracking}
+              >
+                Viewed
+              </button>
+            ) : (
+              <MotionButton
+                onClick={(e) => handleLinkClick(e, option.link)}
+                className="w-full px-6 py-3 rounded-lg text-[#0F2040] font-medium bg-[#FFBB00] cursor-pointer touch-manipulation relative overflow-hidden"
+                disabled={isTracking}
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  boxShadow: [
+                    '0 0 10px rgba(255, 204, 51, 0.5)',
+                    '0 0 20px rgba(255, 204, 51, 0.8)',
+                    '0 0 10px rgba(255, 204, 51, 0.5)'
+                  ]
+                }}
+                transition={{
+                  duration: 1.75,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut"
+                }}
+                whileHover={{
+                  scale: 1.02,
+                  backgroundColor: '#FFCC33',
+                  transition: { duration: 0.2 }
+                }}
+              >
+                Start Investing Now
+              </MotionButton>
+            )}
           </MotionDiv>
         ))}
       </div>
