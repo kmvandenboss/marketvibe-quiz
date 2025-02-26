@@ -3,6 +3,7 @@ interface ClickedLink {
   investmentName: string;
   clickedAt: string;
   url: string;
+  requestInfo?: boolean;
 }
 
 export interface Quiz {

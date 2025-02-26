@@ -31,7 +31,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
   const [isTracking, setIsTracking] = useState(false);
   const [trackingError, setTrackingError] = useState<string | null>(null);
 
-  const handleLinkClick = useCallback(async (e: React.MouseEvent, link: string) => {
+  const handleLinkClick = useCallback(async (e: React.MouseEvent, link: string, requestInfo: boolean = false) => {
     e.preventDefault();
     
     if (!leadId || !link || !quizId) {
@@ -57,7 +57,12 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ leadId, link, quizId }),
+        body: JSON.stringify({ 
+          leadId, 
+          link, 
+          quizId,
+          requestInfo // Add the requestInfo flag
+        }),
       });
 
       const data = await response.json();
@@ -246,7 +251,7 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
               </ul>
             )}
 
-            {/* CTA Button */}
+            {/* CTA Buttons - Split approach */}
             {clickedLinks.includes(option.link) ? (
               <button
                 className="w-full px-6 py-3 rounded-lg text-white font-medium bg-green-600 hover:bg-green-700 cursor-pointer touch-manipulation"
@@ -255,32 +260,55 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
                 Viewed
               </button>
             ) : (
-              <MotionButton
-                onClick={(e) => handleLinkClick(e, option.link)}
-                className="w-full px-6 py-3 rounded-lg text-[#0F2040] font-medium bg-[#FFBB00] cursor-pointer touch-manipulation relative overflow-hidden"
-                disabled={isTracking}
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  boxShadow: [
-                    '0 0 10px rgba(255, 204, 51, 0.5)',
-                    '0 0 20px rgba(255, 204, 51, 0.8)',
-                    '0 0 10px rgba(255, 204, 51, 0.5)'
-                  ]
-                }}
-                transition={{
-                  duration: 1.75,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "easeInOut"
-                }}
-                whileHover={{
-                  scale: 1.02,
-                  backgroundColor: '#FFCC33',
-                  transition: { duration: 0.2 }
-                }}
-              >
-                Start Investing Now
-              </MotionButton>
+              <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                {/* Start Investing Button */}
+                <MotionButton
+                  onClick={(e) => handleLinkClick(e, option.link, false)}
+                  className="flex-1 px-6 py-3 rounded-lg text-[#0F2040] font-medium bg-[#FFBB00] cursor-pointer touch-manipulation relative overflow-hidden"
+                  disabled={isTracking}
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    boxShadow: [
+                      '0 0 10px rgba(255, 204, 51, 0.5)',
+                      '0 0 20px rgba(255, 204, 51, 0.8)',
+                      '0 0 10px rgba(255, 204, 51, 0.5)'
+                    ]
+                  }}
+                  transition={{
+                    duration: 1.75,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    ease: "easeInOut"
+                  }}
+                  whileHover={{
+                    scale: 1.02,
+                    backgroundColor: '#FFCC33',
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  Start Investing Now
+                </MotionButton>
+                
+                {/* Get More Information Button */}
+                <MotionButton
+                  onClick={(e) => handleLinkClick(e, option.link, true)}
+                  className="flex-1 px-6 py-3 rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 cursor-pointer touch-manipulation"
+                  disabled={isTracking}
+                  whileHover={{
+                    scale: 1.02,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  Get More Information
+                </MotionButton>
+              </div>
+            )}
+            
+            {/* Disclaimer text */}
+            {!clickedLinks.includes(option.link) && (
+              <p className="mt-2 text-xs text-gray-500 text-center">
+                By clicking "Get More Information", you agree to have {option.companyName} contact you with details about this investment opportunity.
+              </p>
             )}
           </MotionDiv>
         ))}

@@ -122,11 +122,12 @@ export async function addContactToBrevo(
 }
 
 /**
+ /**
  * Updates a contact in Brevo with clicked investment links
  */
 export async function updateBrevoContactClickedLinks(
   email: string,
-  clickedLinks: Array<{ url: string; investmentName: string; }>
+  clickedLinks: Array<{ url: string; investmentName: string; requestInfo?: boolean; }>
 ) {
   try {
     if (!BREVO_API_KEY) {
@@ -136,11 +137,22 @@ export async function updateBrevoContactClickedLinks(
 
     // Format clicked links for Brevo
     const formattedClicks = clickedLinks.map(link => link.investmentName).join('|');
+    
+    // Get investment names that have requestInfo flag set to true
+    const requestInfoLinks = clickedLinks
+      .filter(link => link.requestInfo === true)
+      .map(link => link.investmentName);
+    
+    // Format investment names with requestInfo as a pipe-separated string
+    const requestInfoString = requestInfoLinks.length > 0 
+      ? requestInfoLinks.join('|') 
+      : '';
 
     // Prepare Brevo API request for update
     const data = {
       attributes: {
-        CLICKED_INVESTMENTS: formattedClicks
+        CLICKED_INVESTMENTS: formattedClicks,
+        REQUESTED_INFO_INVESTMENTS: requestInfoString // New attribute for tracking info requests
       },
       updateEnabled: true
     };

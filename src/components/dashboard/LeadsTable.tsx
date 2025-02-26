@@ -128,7 +128,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({ leads }) => {
                       key={index}
                       className="inline-flex items-center gap-2"
                     >
-                      <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        link.requestInfo 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
                         {link.investmentName || 'Unknown Investment'}
                       </span>
                       <span className="text-xs text-gray-500">

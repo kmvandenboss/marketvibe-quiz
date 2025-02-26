@@ -287,9 +287,11 @@ export async function submitQuizResponse({
 export async function trackLinkClick({
   leadId,
   link,
+  requestInfo = false,
 }: {
   leadId: string;
   link: string;
+  requestInfo?: boolean;
 }) {
   try {
     const lead = await db().select({
@@ -305,7 +307,7 @@ export async function trackLinkClick({
     }
 
     const currentLinks = Array.isArray(lead[0].clicked_links) 
-      ? (lead[0].clicked_links as Array<{ url: string; timestamp: string }>)
+      ? (lead[0].clicked_links as Array<{ url: string; timestamp: string; requestInfo?: boolean }>)
       : [];
     
     if (currentLinks.length >= 3) {
@@ -320,7 +322,8 @@ export async function trackLinkClick({
       ...currentLinks,
       {
         url: link,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        requestInfo: requestInfo || false
       }
     ];
 
@@ -427,13 +430,15 @@ export async function getLeadsList(quizId: string) {
       score: lead.score as Record<string, number>,
       responses: lead.responses as Record<string, string>,
       clickedLinks: Array.isArray(lead.clicked_links) 
-        ? (lead.clicked_links as Array<{ url: string; timestamp: string }>).map(click => {
+        ? (lead.clicked_links as Array<{ url: string; timestamp: string; requestInfo?: boolean }>).map(click => {
             const url = typeof click === 'string' ? click : click.url;
             const timestamp = typeof click === 'string' ? null : click.timestamp;
+            const requestInfo = typeof click === 'object' && 'requestInfo' in click ? click.requestInfo : false;
             return {
               url,
               clickedAt: timestamp,
-              investmentName: optionsMap.get(url)?.title || 'Unknown Investment'
+              investmentName: optionsMap.get(url)?.title || 'Unknown Investment',
+              requestInfo
             };
           })
         : [],
