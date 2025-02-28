@@ -48,7 +48,28 @@ export async function getQuizQuestions(quizId: string) {
 
 export async function getInvestmentOptions(quizId?: string) {
   try {
-    if (!quizId) {
+    // First get the quiz to get its slug (even if quizId is not provided)
+    // This ensures we always have a quizSlug for filtering
+    let quizSlug = null;
+    
+    if (quizId) {
+      const quiz = await db().select({
+        slug: quizzes.slug
+      })
+      .from(quizzes)
+      .where(eq(quizzes.id, quizId))
+      .limit(1);
+
+      if (!quiz.length) {
+        throw new Error(`Quiz not found with ID: ${quizId}`);
+      }
+
+      quizSlug = quiz[0].slug;
+    }
+
+    // If we have a quizSlug, filter by it
+    if (quizSlug) {
+      // Get investment options where quiz_tags contains the quiz slug
       const options = await db()
         .select({
           id: investment_options.id,
@@ -66,57 +87,22 @@ export async function getInvestmentOptions(quizId?: string) {
           quiz_tags: investment_options.quiz_tags
         })
         .from(investment_options)
+        .where(sql`${investment_options.quiz_tags} ? ${quizSlug}`)
         .orderBy(investment_options.priority);
       
-      return options.map(option => ({
+      console.log(`Filtered investment options for quiz slug: ${quizSlug}, found: ${options.length}`);
+      
+      return options.map((option: any) => ({
         ...option,
         tags: option.tags as string[],
         keyFeatures: option.key_features as string[],
         quizTags: option.quiz_tags as Record<string, unknown>
       }));
     }
-
-    // First get the quiz to get its slug
-    const quiz = await db().select({
-      slug: quizzes.slug
-    })
-    .from(quizzes)
-    .where(eq(quizzes.id, quizId))
-    .limit(1);
-
-    if (!quiz.length) {
-      throw new Error(`Quiz not found with ID: ${quizId}`);
-    }
-
-    const quizSlug = quiz[0].slug;
-
-    // Then get investment options where quiz_tags contains the quiz slug
-    const options = await db()
-      .select({
-        id: investment_options.id,
-        title: investment_options.title,
-        description: investment_options.description,
-        link: investment_options.link,
-        tags: investment_options.tags,
-        priority: investment_options.priority,
-        logo_url: investment_options.logo_url,
-        company_name: investment_options.company_name,
-        returns_text: investment_options.returns_text,
-        minimum_investment_text: investment_options.minimum_investment_text,
-        investment_type: investment_options.investment_type,
-        key_features: investment_options.key_features,
-        quiz_tags: investment_options.quiz_tags
-      })
-      .from(investment_options)
-      .where(sql`${investment_options.quiz_tags} ? ${quizSlug}`)
-      .orderBy(investment_options.priority);
     
-    return options.map(option => ({
-      ...option,
-      tags: option.tags as string[],
-      keyFeatures: option.key_features as string[],
-      quizTags: option.quiz_tags as Record<string, unknown>
-    }));
+    // If no quizSlug or no options found for the quizSlug, return an empty array
+    console.log("No quiz slug provided or no matching options found, returning empty array");
+    return [];
   } catch (error) {
     console.error('Error fetching investment options:', error);
     throw new Error('Failed to fetch investment options');

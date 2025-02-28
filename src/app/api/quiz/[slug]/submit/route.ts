@@ -53,10 +53,21 @@ export async function POST(request: Request) {
       isAccredited: validatedData.isAccredited || false
     });
 
+    // Get the quiz to get its slug
+    const quizData = await db()
+      .select({
+        slug: quizzes.slug
+      })
+      .from(quizzes)
+      .where(eq(quizzes.id, validatedData.quizId))
+      .limit(1);
+
+    const quizSlug = quizData[0].slug;
+
     // Get matching investments for the lead
     const rawInvestmentOptions = await getInvestmentOptions(validatedData.quizId);
     const investmentOptions = transformDatabaseResponse<InvestmentOption[]>(rawInvestmentOptions);
-    const matchedInvestments = findMatchingInvestments(score, investmentOptions);
+    const matchedInvestments = findMatchingInvestments(score, investmentOptions, 3, quizSlug);
 
     // Log analytics event for email submission
     await logAnalyticsEvent({

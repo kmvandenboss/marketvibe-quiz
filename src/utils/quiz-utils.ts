@@ -76,18 +76,22 @@ export const calculateQuizScore = (
 export const findMatchingInvestments = (
   scores: TagScores,
   options: InvestmentOption[],
-  maxResults: number = 3
+  maxResults: number = 3,
+  quizSlug?: string // Add quiz slug parameter
 ): InvestmentOption[] => {
   console.log('\n=== Investment Matching Start ===');
   console.log('Input scores:', scores);
   console.log('Available options:', options.length);
+  console.log('Quiz slug:', quizSlug);
   
   return options
     .map(option => {
       console.log(`\nEvaluating option: ${option.title}`);
       
-      // Get quiz-specific tags from quizTags if available
-      const quizTags = Object.values(option.quizTags || {})[0] as string[] || option.tags;
+      // Get quiz-specific tags using the quiz slug if available
+      const quizTags = quizSlug && option.quizTags && option.quizTags[quizSlug] 
+        ? option.quizTags[quizSlug] as string[] 
+        : option.tags;
       console.log('Option tags:', quizTags);
       
       // Calculate match score based on matching tags

@@ -30,6 +30,27 @@ export async function POST(request: NextRequest) {
     parsedBody = validationResult.data;
     const { score, maxResults, quizId } = parsedBody;
 
+    // Get the quiz slug from the database
+    const { db } = await import('@/db');
+    const { quizzes } = await import('@/db/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    const quizData = await db().select({
+      slug: quizzes.slug
+    })
+    .from(quizzes)
+    .where(eq(quizzes.id, quizId))
+    .limit(1);
+
+    if (!quizData.length) {
+      return NextResponse.json(
+        { error: 'Quiz not found' },
+        { status: 404 }
+      );
+    }
+
+    const quizSlug = quizData[0].slug;
+
     // Fetch investment options for this quiz from database
     const dbOptions = await getInvestmentOptions(quizId);
 
@@ -50,8 +71,8 @@ export async function POST(request: NextRequest) {
       quizTags: option.quiz_tags as Record<string, unknown>
     }));
 
-    // Find matching investments using our utility function
-    const matchedOptions = findMatchingInvestments(score, transformedOptions, maxResults);
+    // Find matching investments using our utility function with quiz slug
+    const matchedOptions = findMatchingInvestments(score, transformedOptions, maxResults, quizSlug);
 
     // Log analytics event for recommendations generation
     await logAnalyticsEvent({

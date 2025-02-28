@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { quizzes, questions as questionsTable, question_options, investment_options } from '@/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { QuizSchema, Quiz, InvestmentOption } from '@/lib/quiz/types';
 
 // Type for database response with snake_case columns
@@ -140,14 +140,17 @@ export async function GET(
     // Get the questions
     const questions = await getQuizQuestions(quiz.id);
 
-    // Get investment options and transform to camelCase
+    // Get investment options filtered by quiz slug and transform to camelCase
     const investments = await db()
       .select()
       .from(investment_options)
+      .where(sql`${investment_options.quiz_tags} ? ${params.slug}`)
       .orderBy(investment_options.priority)
       .then(investments => investments.map(investment => 
         transformDatabaseResponse<InvestmentOption>(investment)
       ));
+    
+    console.log(`Filtered investment options for quiz slug: ${params.slug}, found: ${investments.length}`);
 
     return NextResponse.json({
       quiz: validatedQuiz,

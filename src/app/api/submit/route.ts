@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Get matched investments using the sophisticated matching algorithm
-    const matchedInvestments = findMatchingInvestments(scores, investmentOptions, 5);
+    // Get matched investments using the sophisticated matching algorithm with quiz slug
+    const matchedInvestments = findMatchingInvestments(scores, investmentOptions, 5, quiz.slug);
 
     // Send email with matched investments and personality results if applicable
     const emailResult = await sendQuizResults(validatedData.email, {

@@ -211,21 +211,23 @@ export const ResultsCard: React.FC<ResultsCardProps> = ({
               </div>
             </div>
 
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              {option.returnsText && (
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-600">Returns</p>
-                  <p className="text-lg font-semibold text-gray-800">{option.returnsText}</p>
-                </div>
-              )}
-              {option.minimumInvestmentText && (
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-600">Minimum Investment</p>
-                  <p className="text-lg font-semibold text-gray-800">{option.minimumInvestmentText}</p>
-                </div>
-              )}
-            </div>
+            {/* Key Metrics - Hidden for specific quiz */}
+            {quizId !== '20f7ad32-9621-4f9d-ba00-ad371f754f9c' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {option.returnsText && (
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <p className="text-sm text-gray-600">Returns</p>
+                    <p className="text-lg font-semibold text-gray-800">{option.returnsText}</p>
+                  </div>
+                )}
+                {option.minimumInvestmentText && (
+                  <div className="bg-white p-3 rounded-lg shadow-sm">
+                    <p className="text-sm text-gray-600">Minimum Investment</p>
+                    <p className="text-lg font-semibold text-gray-800">{option.minimumInvestmentText}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Investment Type */}
             {option.investmentType && (
