@@ -11,6 +11,7 @@ import ResultsCardContainer from './ResultsCardContainer';
 import LoadingSpinner from './LoadingSpinner';
 import Button, { MotionButton } from '@/components/ui/button';
 import { calculateQuizScore } from '@/utils/quiz-utils';
+import { trackTaboolaQualifiedLead } from '@/components/TaboolaPixel';
 
 interface QuizContainerProps {
   quiz: Quiz;
@@ -240,6 +241,11 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
 
       if (!submitResponse.ok) {
         throw new Error('Failed to submit quiz response');
+      }
+      
+      // Track Taboola qualified lead if user is accredited
+      if (isAccredited) {
+        trackTaboolaQualifiedLead();
       }
 
       const { leadId, resultsConfig, personalityResult } = await submitResponse.json();

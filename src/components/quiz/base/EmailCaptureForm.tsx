@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, MotionProps } from 'framer-motion';
 import Link from 'next/link';
+import { trackTaboolaLeadSubmit } from '@/components/TaboolaPixel';
 
 interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
@@ -72,6 +73,9 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
   
       // Send conversion event to Meta
       await sendConversion(email);
+      
+      // Track Taboola lead submission
+      trackTaboolaLeadSubmit();
       
       // Call the original onSubmit handler
       onSubmit(email);
