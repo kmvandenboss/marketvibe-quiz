@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, MotionProps } from 'framer-motion';
 import Link from 'next/link';
 import { trackTaboolaLeadSubmit } from '@/components/TaboolaPixel';
+import { trackTwitterLeadSubmit } from '@/components/TwitterPixel';
 
 interface EmailCaptureFormProps {
   onSubmit: (email: string) => void;
@@ -76,6 +77,9 @@ const EmailCaptureForm: React.FC<EmailCaptureFormProps> = ({
       
       // Track Taboola lead submission
       trackTaboolaLeadSubmit();
+      
+      // Track Twitter lead submission
+      trackTwitterLeadSubmit();
       
       // Call the original onSubmit handler
       onSubmit(email);

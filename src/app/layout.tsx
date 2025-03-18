@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import MetaPixel from "@/components/MetaPixel";
 import TaboolaPixel from "@/components/TaboolaPixel";
+import TwitterPixel from "@/components/TwitterPixel";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <MetaPixel />
         <TaboolaPixel />
+        <TwitterPixel />
         {children}
       </body>
     </html>
