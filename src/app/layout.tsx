@@ -25,6 +25,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(s, p, i, c, e) {
+                s[e] = s[e] || function() { (s[e].a = s[e].a || []).push(arguments); };
+                s[e].l = 1 * new Date();
+                var t = new Date().getTime();
+                var k = c.createElement("script"), a = c.getElementsByTagName("script")[0];
+                k.async = 1, k.src = p + "?request_id=" + i + "&t=" + t, a.parentNode.insertBefore(k, a);
+                s.pixelClientId = i;
+              })(window, "https://main.dashboard.datashopper.com/script", "marketvibe", document, "script");
+            `
+          }}
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <MetaPixel />
         <TaboolaPixel />
