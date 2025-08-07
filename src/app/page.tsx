@@ -51,7 +51,7 @@ export default function Home() {
               />
             </div>
             <div className="text-gray-600 text-sm md:text-base">
-              27,492 investors helped
+              47,461 investors helped
             </div>
           </div>
 
