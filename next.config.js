@@ -2,6 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  images: {
+    domains: ['cdn.sanity.io'],
+  },
+  experimental: {
+    taint: true,
+  },
 };
 
 module.exports = nextConfig;

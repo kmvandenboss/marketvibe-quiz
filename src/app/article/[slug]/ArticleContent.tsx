@@ -1,0 +1,131 @@
+// src/app/article/[slug]/ArticleContent.tsx
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { PortableText } from '@portabletext/react';
+import { urlFor } from '@/lib/sanity';
+import { portableTextComponents } from '@/components/sanity/PortableTextComponents';
+import Footer from '@/components/Footer';
+
+type ArticleContentProps = {
+  article: any;
+};
+
+export default function ArticleContent({ article }: ArticleContentProps) {
+  const publishedDate = article.publishedAt 
+    ? new Date(article.publishedAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : null;
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <main className="flex-grow">
+        {/* Header Section */}
+        <div className="container max-w-6xl mx-auto px-4 py-3 md:py-6">
+          <div className="flex justify-between items-center mb-8">
+            <div className="w-[20%]">
+              <Link href="/">
+                <Image
+                  src="/images/MarketVibe-logo.png"
+                  alt="MarketVibe Logo"
+                  width={748}
+                  height={368}
+                  className="w-full h-auto"
+                  priority
+                />
+              </Link>
+            </div>
+          </div>
+
+          {/* Article Content */}
+          <article className="max-w-4xl mx-auto">
+            {/* Article Header */}
+            <header className="mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                {article.title}
+              </h1>
+              
+              {article.excerpt && (
+                <p className="text-xl text-gray-600 mb-4 leading-relaxed">
+                  {article.excerpt}
+                </p>
+              )}
+
+              {publishedDate && (
+                <div className="flex items-center text-gray-500 mb-6">
+                  <time dateTime={article.publishedAt}>
+                    Published on {publishedDate}
+                  </time>
+                  {article.estimatedReadingTime && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <span>{article.estimatedReadingTime} min read</span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Featured Image */}
+              {article.featuredImage && (
+                <div className="mb-8">
+                  <Image
+                    src={urlFor(article.featuredImage)
+                      .width(1200)
+                      .height(600)
+                      .fit('crop')
+                      .auto('format')
+                      .url()}
+                    alt={article.featuredImage.alt || article.title}
+                    width={1200}
+                    height={600}
+                    className="rounded-lg w-full h-auto"
+                    priority
+                  />
+                </div>
+              )}
+            </header>
+
+            {/* Article Content */}
+            <div className="prose prose-lg max-w-none">
+              <PortableText
+                value={article.content}
+                components={portableTextComponents}
+              />
+            </div>
+
+            {/* Article Footer */}
+            <footer className="mt-12 pt-8 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <div className="mb-4 sm:mb-0">
+                  <p className="text-gray-600">
+                    Want to learn more about building wealth?
+                  </p>
+                  <Link 
+                    href="/quiz" 
+                    className="text-[rgb(50,205,50)] hover:underline font-medium"
+                  >
+                    Take our investment quiz →
+                  </Link>
+                </div>
+                
+                <div className="flex space-x-4">
+                  <Link
+                    href="/"
+                    className="text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    ← Back to Home
+                  </Link>
+                </div>
+              </div>
+            </footer>
+          </article>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
