@@ -3,6 +3,8 @@ import { db } from '@/db';
 import { analytics_events, investment_options } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

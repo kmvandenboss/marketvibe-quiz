@@ -23,6 +23,8 @@ interface QuizRow {
 }
 import { transformDatabaseResponse } from '@/utils/case-transform';
 
+export const runtime = 'nodejs';
+
 async function getQuizBySlug(slug: string) {
   try {
     const quiz = await db()

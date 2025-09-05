@@ -7,6 +7,8 @@ import { leads, investment_options } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { updateBrevoContactClickedLinks } from '@/utils/email';
 
+export const runtime = 'nodejs';
+
 const TrackClickSchema = z.object({
   leadId: z.string().uuid(),
   link: z.string().min(1), // Accept any non-empty string for the link

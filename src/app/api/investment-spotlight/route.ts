@@ -4,6 +4,8 @@ import { investment_options } from '@/db/schema';
 import { inArray } from 'drizzle-orm';
 import type { InvestmentOption } from '@/types/quiz';
 
+export const runtime = 'nodejs';
+
 // Investment option IDs to randomly select from
 const INVESTMENT_IDS = [
   '6c16c0d2-c25d-4a0d-95ef-c9cbca6c8e06',

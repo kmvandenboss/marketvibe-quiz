@@ -10,6 +10,8 @@ import { sendQuizResults, addContactToBrevo } from '@/utils/email';
 import { transformDatabaseResponse } from '@/utils/case-transform';
 import { Question, InvestmentOption } from '@/types/quiz';
 
+export const runtime = 'nodejs';
+
 const SubmissionSchema = z.object({
   quizId: z.string().uuid(),
   email: z.string().email(),

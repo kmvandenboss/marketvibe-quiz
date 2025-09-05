@@ -1,13 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
-  images: {
-    domains: ['cdn.sanity.io'],
-  },
+  // Basic configuration for Vercel deployment
   experimental: {
-    taint: true,
-  },
-};
+    // Disable problematic features during build
+    serverComponentsExternalPackages: ['bcryptjs']
+  }
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

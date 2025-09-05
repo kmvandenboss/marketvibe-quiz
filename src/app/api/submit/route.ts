@@ -6,6 +6,8 @@ import { InvestmentOption } from '@/types/quiz';
 import { z } from 'zod';
 import { db } from '@/db';
 import { quizzes } from '@/db/schema';
+
+export const runtime = 'nodejs';
 import { eq } from 'drizzle-orm';
 
 const SubmissionSchema = z.object({
