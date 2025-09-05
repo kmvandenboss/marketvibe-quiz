@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { trackLinkClick, logAnalyticsEvent } from '@/db/queries';
 
+export const dynamic = 'force-dynamic';
+
 const RedirectSchema = z.object({
   leadId: z.string().uuid(),
   link: z.string().min(1)

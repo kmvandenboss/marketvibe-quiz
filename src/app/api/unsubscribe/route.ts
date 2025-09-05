@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 const UnsubscribeSchema = z.object({
   email: z.string().email(),
   token: z.string().min(16)

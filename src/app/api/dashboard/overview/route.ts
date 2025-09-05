@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { verifyAuth } from '@/lib/auth';
 import { getQuizzesList, getQuizOverviewMetrics } from '@/db/queries';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 // Define a type that matches what getQuizzesList returns

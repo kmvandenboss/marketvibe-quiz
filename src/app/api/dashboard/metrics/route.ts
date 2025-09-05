@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { getDashboardMetrics } from '@/db/queries';
 import { verifyAuth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const token = request.headers.get('Cookie')?.split('auth-token=')?.[1]?.split(';')?.[0];

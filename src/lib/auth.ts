@@ -4,16 +4,16 @@ import { users, sessions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import bcrypt from 'bcryptjs';
+import { hash, compare } from 'bcryptjs';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
+  return hash(password, 10);
 }
 
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword);
+  return compare(password, hashedPassword);
 }
 
 export async function createSession(userId: string) {

@@ -3,7 +3,7 @@
 
 import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 declare global {
   interface Window {
@@ -13,7 +13,7 @@ declare global {
 
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
-export default function MetaPixel() {
+function MetaPixelContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -33,6 +33,10 @@ export default function MetaPixel() {
     }
   }, [pathname, searchParams]);
 
+  return null;
+}
+
+export default function MetaPixel() {
   // Don't render anything if pixel ID is not available
   if (!FB_PIXEL_ID) {
     return null;
@@ -67,6 +71,9 @@ export default function MetaPixel() {
           alt=""
         />
       </noscript>
+      <Suspense fallback={null}>
+        <MetaPixelContent />
+      </Suspense>
     </>
   );
 }

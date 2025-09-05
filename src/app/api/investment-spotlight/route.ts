@@ -4,6 +4,7 @@ import { investment_options } from '@/db/schema';
 import { inArray } from 'drizzle-orm';
 import type { InvestmentOption } from '@/types/quiz';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 // Investment option IDs to randomly select from
