@@ -77,24 +77,24 @@ function QuizEmbedComponent({ value }: { value: any }) {
   }
 
   return (
-    <div className="my-12" data-quiz-embed>
+    <div className="my-16" data-quiz-embed>
       {/* CTA Section - only show if we have a title, description, or scroll button */}
       {(value.title || value.description || value.showScrollButton) && (
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-[rgb(50,205,50)] rounded-lg p-6 shadow-sm mb-8">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-l-4 border-[rgb(50,205,50)] rounded-lg p-8 shadow-sm mb-10">
           {value.title && (
-            <h3 className="text-xl font-bold text-gray-800 mb-3">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">
               {value.title}
             </h3>
           )}
           {value.description && (
-            <p className="text-gray-700 mb-4">{value.description}</p>
+            <p className="text-lg text-gray-700 mb-6 leading-relaxed">{value.description}</p>
           )}
           {value.showScrollButton && (
             <button
               onClick={handleScrollToQuiz}
-              className="bg-[rgb(50,205,50)] text-white px-6 py-3 rounded-lg font-semibold flex items-center hover:bg-[rgb(45,185,45)] transition-colors"
+              className="bg-[rgb(50,205,50)] text-white px-8 py-4 rounded-lg font-semibold text-lg flex items-center hover:bg-[rgb(45,185,45)] transition-colors"
             >
-              {value.ctaText || 'Take the Quiz'} <ArrowDown className="ml-2 w-4 h-4" />
+              {value.ctaText || 'Take the Quiz'} <ArrowDown className="ml-2 w-5 h-5" />
             </button>
           )}
         </div>
@@ -102,16 +102,16 @@ function QuizEmbedComponent({ value }: { value: any }) {
 
       {/* Quiz Section */}
       {showQuiz && (
-        <div id={`quiz-${quizSlug}`} className="max-w-2xl mx-auto mt-8">
+        <div id={`quiz-${quizSlug}`} className="max-w-2xl mx-auto mt-12">
           {loading ? (
-            <div className="text-center py-8">Loading quiz...</div>
+            <div className="text-center py-12 text-lg">Loading quiz...</div>
           ) : quizData ? (
             <QuizContainer 
               quiz={quizData.quiz}
               questions={quizData.questions}
             />
           ) : (
-            <div className="text-center py-8 text-red-500">Failed to load quiz</div>
+            <div className="text-center py-12 text-red-500 text-lg">Failed to load quiz</div>
           )}
         </div>
       )}
@@ -142,42 +142,42 @@ function InvestmentOptionsComponent({ value }: { value: any }) {
   }, [value.maxItems]);
 
   if (loading) {
-    return <div className="text-center py-8">Loading investment options...</div>;
+    return <div className="text-center py-12 text-lg">Loading investment options...</div>;
   }
 
   return (
-    <div className="my-12">
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold mb-4">{value.title}</h3>
+    <div className="my-16">
+      <div className="text-center mb-12">
+        <h3 className="text-3xl font-bold mb-6">{value.title}</h3>
         {value.description && (
-          <p className="text-gray-600 max-w-2xl mx-auto">{value.description}</p>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">{value.description}</p>
         )}
       </div>
       
-      <div className={`grid gap-6 ${
+      <div className={`grid gap-8 ${
         value.layout === 'list' ? 'grid-cols-1' : 
         value.layout === 'featured' ? 'grid-cols-1 md:grid-cols-2' :
         'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
       }`}>
         {investments.map((investment: any) => (
-          <div key={investment.id} className="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
+          <div key={investment.id} className="bg-white border rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center mb-6">
               {investment.logoUrl && (
                 <Image
                   src={investment.logoUrl}
                   alt={investment.companyName}
-                  width={40}
-                  height={40}
+                  width={48}
+                  height={48}
                   className="rounded"
                 />
               )}
-              <div className="ml-3">
-                <h4 className="font-semibold">{investment.title}</h4>
-                <p className="text-sm text-gray-600">{investment.companyName}</p>
+              <div className="ml-4">
+                <h4 className="font-bold text-lg">{investment.title}</h4>
+                <p className="text-gray-600">{investment.companyName}</p>
               </div>
             </div>
-            <p className="text-gray-700 mb-4">{investment.description}</p>
-            <div className="space-y-2 text-sm">
+            <p className="text-gray-700 mb-6 text-lg leading-relaxed">{investment.description}</p>
+            <div className="space-y-3 text-base">
               <p><strong>Returns:</strong> {investment.returnsText}</p>
               <p><strong>Minimum:</strong> {investment.minimumInvestmentText}</p>
             </div>
@@ -228,14 +228,14 @@ function CallToActionComponent({ value }: { value: any }) {
   };
 
   return (
-    <div className={`my-8 rounded-lg p-6 shadow-sm ${getBackgroundClass()}`}>
-      <h3 className="text-xl font-bold text-gray-800 mb-3">{value.title}</h3>
+    <div className={`my-12 rounded-lg p-8 shadow-sm ${getBackgroundClass()}`}>
+      <h3 className="text-2xl font-bold text-gray-800 mb-4">{value.title}</h3>
       {value.description && (
-        <p className="text-gray-700 mb-4">{value.description}</p>
+        <p className="text-lg text-gray-700 mb-6 leading-relaxed">{value.description}</p>
       )}
       <button
         onClick={handleClick}
-        className={`px-6 py-3 rounded-lg font-semibold transition-colors ${getButtonClass()}`}
+        className={`px-8 py-4 rounded-lg font-semibold text-lg transition-colors ${getButtonClass()}`}
       >
         {value.buttonText}
       </button>
@@ -251,16 +251,16 @@ export const portableTextComponents: PortableTextComponents = {
       }
 
       return (
-        <div className="my-8">
+        <div className="my-12">
           <Image
-            src={urlFor(value).width(800).height(600).fit('max').auto('format').url()}
+            src={urlFor(value).width(900).height(600).fit('max').auto('format').url()}
             alt={value.alt || 'Article image'}
-            width={800}
+            width={900}
             height={600}
             className="rounded-lg w-full h-auto"
           />
           {value.caption && (
-            <p className="text-sm text-gray-600 mt-2 text-center italic">
+            <p className="text-base text-gray-600 mt-4 text-center italic leading-relaxed">
               {value.caption}
             </p>
           )}
@@ -272,28 +272,79 @@ export const portableTextComponents: PortableTextComponents = {
     callToAction: CallToActionComponent,
   },
   block: {
-    h1: ({ children }) => <h1 className="text-3xl md:text-4xl font-bold mb-6 mt-8">{children}</h1>,
-    h2: ({ children }) => <h2 className="text-2xl font-bold mb-4 mt-8">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-xl font-bold mb-3 mt-6">{children}</h3>,
+    h1: ({ children }) => (
+      <h1 className="text-4xl md:text-5xl font-bold mb-8 mt-12 leading-tight text-gray-900">
+        {children}
+      </h1>
+    ),
+    h2: ({ children }) => (
+      <h2 className="text-3xl md:text-4xl font-bold mb-6 mt-12 leading-tight text-gray-900">
+        {children}
+      </h2>
+    ),
+    h3: ({ children }) => (
+      <h3 className="text-2xl md:text-3xl font-bold mb-5 mt-10 leading-tight text-gray-900">
+        {children}
+      </h3>
+    ),
+    h4: ({ children }) => (
+      <h4 className="text-xl md:text-2xl font-bold mb-4 mt-8 leading-tight text-gray-900">
+        {children}
+      </h4>
+    ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-[rgb(50,205,50)] pl-4 my-6 italic text-lg">
+      <blockquote className="border-l-4 border-[rgb(50,205,50)] pl-8 py-4 my-10 italic text-xl md:text-2xl leading-relaxed bg-gray-50 rounded-r-lg">
         {children}
       </blockquote>
     ),
-    normal: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+    normal: ({ children }) => (
+      <p className="mb-6 leading-loose text-lg md:text-xl text-gray-800">
+        {children}
+      </p>
+    ),
+  },
+  list: {
+    bullet: ({ children }) => (
+      <ul className="list-disc pl-8 mb-6 space-y-3">
+        {children}
+      </ul>
+    ),
+    number: ({ children }) => (
+      <ol className="list-decimal pl-8 mb-6 space-y-3">
+        {children}
+      </ol>
+    ),
+  },
+  listItem: {
+    bullet: ({ children }) => (
+      <li className="text-lg md:text-xl leading-loose text-gray-800">
+        {children}
+      </li>
+    ),
+    number: ({ children }) => (
+      <li className="text-lg md:text-xl leading-loose text-gray-800">
+        {children}
+      </li>
+    ),
   },
   marks: {
-    strong: ({ children }) => <strong className="font-bold">{children}</strong>,
-    em: ({ children }) => <em className="italic">{children}</em>,
+    strong: ({ children }) => (
+      <strong className="font-bold text-gray-900">{children}</strong>
+    ),
+    em: ({ children }) => (
+      <em className="italic">{children}</em>
+    ),
     code: ({ children }) => (
-      <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">{children}</code>
+      <code className="bg-gray-100 px-3 py-1 rounded text-base font-mono border">
+        {children}
+      </code>
     ),
     link: ({ children, value }) => (
       <a
         href={value?.href}
         target={value?.blank ? '_blank' : '_self'}
         rel={value?.blank ? 'noopener noreferrer' : undefined}
-        className="text-[rgb(50,205,50)] hover:underline font-medium"
+        className="text-[rgb(50,205,50)] hover:underline font-semibold underline-offset-2 hover:text-[rgb(45,185,45)] transition-colors"
       >
         {children}
       </a>
